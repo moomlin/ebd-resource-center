@@ -865,25 +865,56 @@ const recentLeaveTableBody = document.querySelector(
   "#recentLeaveTable tbody"
 );
 
+// 時間範圍選擇時自動計算請假時數
+const leavePeriodSelect = document.getElementById("leavePeriod");
+const leaveHoursInput = document.getElementById("leaveHours");
+
+if (leavePeriodSelect && leaveHoursInput) {
+  leavePeriodSelect.addEventListener("change", (e) => {
+    const period = e.target.value;
+    if (!period || period.includes("---")) {
+      leaveHoursInput.value = "";
+      return;
+    }
+
+    // 解析時間範圍 HH:MM~HH:MM
+    const [startTime, endTime] = period.split("~");
+    const start = new Date(`2024-01-01 ${startTime}`);
+    const end = new Date(`2024-01-01 ${endTime}`);
+    
+    // 計算分鐘差
+    const diffMinutes = (end - start) / (1000 * 60);
+    // 轉換為小時，未滿1小時進位
+    const hours = Math.ceil(diffMinutes / 60);
+    
+    leaveHoursInput.value = `${hours}小時`;
+  });
+}
+
 if (leaveForm) {
   leaveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const period = document.getElementById("leavePeriod").value;
+    if (!period || period.includes("---")) {
+      alert("請選擇時間範圍。");
+      return;
+    }
+
     const data = {
       teacher: document.getElementById("leaveTeacherName").value,
       type: document.getElementById("leaveType").value,
-      startDate: document.getElementById("leaveStartDate").value,
-      endDate: document.getElementById("leaveEndDate").value || null,
-      timeRange: document.getElementById("leaveTimeRange").value || "",
-      hours: Number(document.getElementById("leaveHours").value),
-      agent: document.getElementById("leaveAgent").value || "",
+      startDate: document.getElementById("leaveDate").value,
+      timeRange: period,
+      hours: parseInt(document.getElementById("leaveHours").value),
+      agent: document.getElementById("leaveAgent").value,
       reason: document.getElementById("leaveReason").value || "",
       proofUrl: document.getElementById("leaveProofUrl").value || "",
       createdAt: serverTimestamp(),
     };
 
-    if (!data.teacher || !data.type || !data.startDate) {
-      alert("請至少填寫請假人、假別與開始日期。");
+    if (!data.teacher || !data.type || !data.startDate || !data.agent) {
+      alert("請填寫所有必填欄位。");
       return;
     }
 
@@ -891,6 +922,7 @@ if (leaveForm) {
       await addDoc(leaveCol, data);
       alert("請假紀錄已新增。");
       leaveForm.reset();
+      leaveHoursInput.value = "";
       loadRecentLeaveRecords();
       loadLeaveStatistics();
     } catch (e) {
@@ -904,7 +936,7 @@ async function loadRecentLeaveRecords() {
   if (!recentLeaveTableBody) return;
 
   recentLeaveTableBody.innerHTML =
-    "<tr><td colspan='6' class='loading-text'>載入中⋯</td></tr>";
+    "<tr><td colspan='7' class='loading-text'>載入中⋯</td></tr>";
 
   try {
     const qRef = query(leaveCol, orderBy("createdAt", "desc"));
@@ -914,7 +946,7 @@ async function loadRecentLeaveRecords() {
 
     if (snap.empty) {
       recentLeaveTableBody.innerHTML =
-        "<tr><td colspan='6' class='empty-text'>尚無請假紀錄。</td></tr>";
+        "<tr><td colspan='7' class='empty-text'>尚無請假紀錄。</td></tr>";
       return;
     }
 
@@ -924,16 +956,18 @@ async function loadRecentLeaveRecords() {
       const d = docSnap.data();
       const id = docSnap.id;
 
-      const dateStr = d.endDate
-        ? `${d.startDate} ~ ${d.endDate}`
-        : d.startDate || "";
+      const dateStr = d.startDate || "";
+      const hoursDisplay = typeof d.hours === 'number' 
+        ? `${d.hours}小時`
+        : d.hours || "";
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${dateStr}</td>
         <td>${d.teacher || ""}</td>
         <td>${d.type || ""}</td>
-        <td>${d.hours || ""}</td>
+        <td>${d.timeRange || ""}</td>
+        <td>${hoursDisplay}</td>
         <td>${d.agent || ""}</td>
         <td>
           <button type="button" class="table-btn delete-leave" data-id="${id}">
@@ -1240,17 +1274,20 @@ async function loadLeaveStatistics() {
         "<tr><td colspan='7' class='empty-text'>目前查詢條件下沒有請假紀錄。</td></tr>";
     } else {
       filtered.forEach(({ id, data: d }) => {
-        const dateStr = d.endDate
-          ? `${d.startDate} ~ ${d.endDate}`
-          : d.startDate || "";
+        const dateStr = d.startDate || "";
+        const hoursDisplay = typeof d.hours === 'number' 
+          ? `${d.hours}小時`
+          : d.hours || "";
+        const timeRangeDisplay = d.timeRange || "";
+        
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${dateStr}</td>
           <td>${d.teacher || ""}</td>
           <td>${d.type || ""}</td>
-          <td>${d.hours || ""}</td>
+          <td>${timeRangeDisplay}</td>
+          <td>${hoursDisplay}</td>
           <td>${d.agent || ""}</td>
-          <td>${d.reason || ""}</td>
           <td>
             <button type="button" class="table-btn delete-leave" data-id="${id}">
               刪除

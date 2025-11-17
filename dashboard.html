@@ -493,12 +493,12 @@
               <table class="info-table" id="leaveStatsTable">
                 <thead>
                   <tr>
-                    <th>日期區間</th>
+                    <th>請假日期</th>
                     <th>教師</th>
                     <th>假別</th>
-                    <th>時數</th>
+                    <th>時間範圍</th>
+                    <th>請假時數</th>
                     <th>職務代理人</th>
-                    <th>事由</th>
                     <th>操作</th>
                   </tr>
                 </thead>
@@ -552,13 +552,13 @@
             <form id="leaveForm">
               <div class="form-row">
                 <div class="form-col-half">
-                  <label for="leaveTeacherName">請假人姓名</label>
+                  <label for="leaveTeacherName">請假人姓名 <span style="color: red;">*</span></label>
                   <select id="leaveTeacherName" required>
                     <option value="">請選擇教師</option>
                   </select>
                 </div>
                 <div class="form-col-half">
-                  <label for="leaveType">假別</label>
+                  <label for="leaveType">假別 <span style="color: red;">*</span></label>
                   <select id="leaveType" required>
                     <option value="">請選擇假別</option>
                     <option value="事假">事假</option>
@@ -572,63 +572,62 @@
               </div>
 
               <div class="form-row">
-                <div class="form-col-half">
-                  <label for="leaveStartDate">開始日期</label>
-                  <input
-                    type="date"
-                    id="leaveStartDate"
-                    required
-                  />
-                </div>
-                <div class="form-col-half">
-                  <label for="leaveEndDate">結束日期（若為單日可留白）</label>
-                  <input type="date" id="leaveEndDate" />
+                <div class="form-col">
+                  <label for="leaveDate">請假日期（若請假多天，請分天填寫） <span style="color: red;">*</span></label>
+                  <input type="date" id="leaveDate" required />
                 </div>
               </div>
 
               <div class="form-row">
                 <div class="form-col-half">
-                  <label for="leaveTimeRange"
-                    >時間 / 範圍（選填）</label
-                  >
-                  <input
-                    type="text"
-                    id="leaveTimeRange"
-                    placeholder="例：第1～4節、全天"
-                  />
+                  <label for="leavePeriod">時間範圍 <span style="color: red;">*</span></label>
+                  <select id="leavePeriod" required>
+                    <option value="">請選擇時間範圍</option>
+                    <option value="">--- 上午 ---</option>
+                    <option value="08:00~09:00">上午 08:00～09:00</option>
+                    <option value="09:00~10:00">上午 09:00～10:00</option>
+                    <option value="10:00~11:00">上午 10:00～11:00</option>
+                    <option value="11:00~12:00">上午 11:00～12:00</option>
+                    <option value="">--- 下午 ---</option>
+                    <option value="13:00~14:00">下午 13:00～14:00</option>
+                    <option value="14:00~15:00">下午 14:00～15:00</option>
+                    <option value="15:00~16:00">下午 15:00～16:00</option>
+                    <option value="16:00~17:00">下午 16:00～17:00</option>
+                    <option value="">--- 全天 ---</option>
+                    <option value="08:00~17:00">全天 08:00～17:00</option>
+                  </select>
                 </div>
                 <div class="form-col-half">
-                  <label for="leaveHours">請假時數</label>
-                  <input
-                    type="number"
-                    id="leaveHours"
-                    min="0"
-                    step="0.5"
-                    placeholder="例：2、4、7.5"
-                    required
+                  <label for="leaveHours">請假時數（最小單位為一小時） <span style="color: red;">*</span></label>
+                  <input 
+                    type="text" 
+                    id="leaveHours" 
+                    readonly 
+                    placeholder="自動計算"
                   />
                 </div>
               </div>
 
               <div class="form-row">
-                <div class="form-col-half">
-                  <label for="leaveAgent">職務代理人（選填）</label>
-                  <input type="text" id="leaveAgent" />
-                </div>
-                <div class="form-col-half">
-                  <label for="leaveProofUrl"
-                    >相關請假證明（雲端網址，可留白）</label
-                  >
-                  <input type="text" id="leaveProofUrl" />
+                <div class="form-col">
+                  <label for="leaveAgent">職務代理人 <span style="color: red;">*</span></label>
+                  <input type="text" id="leaveAgent" required />
                 </div>
               </div>
 
               <div class="form-row">
-                <label for="leaveReason">請假事由（簡要說明）</label>
+                <div class="form-col">
+                  <label for="leaveProofUrl">相關請假證明（雲端網址）</label>
+                  <input type="text" id="leaveProofUrl" placeholder="選填" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label for="leaveReason">請假事由（可簡要說明）</label>
                 <textarea
                   id="leaveReason"
                   rows="3"
-                  placeholder="例：陪同家人就醫、參加研習活動等"
+                  placeholder="選填：例：陪同家人就醫、參加研習活動等"
                 ></textarea>
               </div>
 
@@ -641,17 +640,18 @@
             <table class="info-table" id="recentLeaveTable">
               <thead>
                 <tr>
-                  <th>日期區間</th>
+                  <th>請假日期</th>
                   <th>教師</th>
                   <th>假別</th>
-                  <th>時數</th>
+                  <th>時間範圍</th>
+                  <th>請假時數</th>
                   <th>職務代理人</th>
                   <th>操作</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td colspan="6" class="empty-text">
+                  <td colspan="7" class="empty-text">
                     尚無請假紀錄。
                   </td>
                 </tr>
