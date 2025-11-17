@@ -411,6 +411,12 @@
             >
               請假登記
             </button>
+            <button
+              class="subtab-button"
+              data-subtab="leaveSummaryReportPanel"
+            >
+              請假資訊統整表
+            </button>
           </div>
 
           <!-- 請假統計 -->
@@ -475,13 +481,6 @@
                       class="btn-tertiary"
                     >
                       清除搜尋條件
-                    </button>
-                    <button
-                      type="button"
-                      id="showLeaveSummaryReportBtn"
-                      class="btn-tertiary"
-                    >
-                      請假資訊統整表
                     </button>
                   </div>
                 </div>
@@ -676,6 +675,78 @@
                 </tr>
               </tbody>
             </table>
+          </section>
+
+          <!-- 請假資訊統整表 -->
+          <section
+            id="leaveSummaryReportPanel"
+            class="card subtab-panel"
+            style="display: none"
+          >
+            <h3 class="card-title">請假資訊統整表（學年度統計）</h3>
+
+            <form id="leaveSummaryReportForm" class="card">
+              <div class="form-row">
+                <div class="form-col-half">
+                  <label for="reportTeacherNameSelect">教師姓名</label>
+                  <select id="reportTeacherNameSelect" required>
+                    <option value="">請選擇教師</option>
+                  </select>
+                </div>
+                <div class="form-col-half align-right">
+                  <div class="form-actions right-actions">
+                    <button type="submit" id="generateReportBtn">
+                      查詢
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <div id="leaveSummaryReportContainer" style="display: none;">
+              <div class="card">
+                <h3 class="card-title" id="reportTeacherTitle"></h3>
+                <table class="info-table" id="leaveSummaryDetailTable">
+                  <thead>
+                    <tr>
+                      <th>假別</th>
+                      <th>日期</th>
+                      <th>時數</th>
+                      <th>職務代理人</th>
+                      <th>事由</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="5" class="empty-text">
+                        無請假紀錄。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="card">
+                <h3 class="card-title">各假別統計</h3>
+                <table class="info-table" id="leaveSummaryTable">
+                  <thead>
+                    <tr>
+                      <th>假別</th>
+                      <th>日數</th>
+                      <th>時數</th>
+                      <th>筆數</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="4" class="empty-text">
+                        無統計資料。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         </section>
 
@@ -924,60 +995,6 @@
       </div>
 
     </main>
-    </div>
-
-    <!-- 請假資訊統整表 Modal -->
-    <div id="leaveSummaryReportModal" class="modal" style="display: none;">
-      <div class="modal-content" style="max-width: 1000px;">
-        <div class="modal-header">
-          <h2>請假資訊統整表（學年度統計）</h2>
-          <button type="button" id="closeLeaveSummaryReportBtn" class="close-btn">✕</button>
-        </div>
-
-        <div class="modal-body">
-          <div class="form-row">
-            <div class="form-col-half">
-              <label for="reportSchoolYearSelect">學年度</label>
-              <select id="reportSchoolYearSelect">
-                <!-- 將由 JS 動態填入 -->
-              </select>
-            </div>
-            <div class="form-col-half align-right">
-              <button type="button" id="generateReportBtn" class="btn-secondary">
-                查看統計
-              </button>
-            </div>
-          </div>
-
-          <table class="info-table" id="leaveSummaryReportTable">
-            <thead>
-              <tr>
-                <th>教師姓名</th>
-                <th>事假</th>
-                <th>病假</th>
-                <th>公假</th>
-                <th>家庭照顧假</th>
-                <th>歲時祭儀假</th>
-                <th>心理調適假</th>
-                <th>合計</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="8" class="empty-text">
-                  請選擇學年度後查看統計。
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" id="closeLeaveSummaryReportBtn2" class="btn-tertiary">
-            關閉
-          </button>
-        </div>
-      </div>
     </div>
 
     <script type="module" src="dashboard.js"></script>

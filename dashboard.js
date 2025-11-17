@@ -1595,6 +1595,20 @@ async function deleteUser(docId) {
     alert("刪除失敗：" + error.message);
   }
 }
+// ========== 時數轉換函數（8小時 = 1日）==========
+function convertHoursToDateFormat(hours) {
+  hours = Number(hours) || 0;
+  const days = Math.floor(hours / 8);
+  const remainingHours = hours % 8;
+  
+  if (days > 0 && remainingHours > 0) {
+    return `${days}日${remainingHours}時`;
+  } else if (days > 0) {
+    return `${days}日`;
+  } else {
+    return `${remainingHours}時`;
+  }
+}
 
 // 載入已批准的教師到下拉選單
 async function loadApprovedTeachers() {
@@ -1656,6 +1670,20 @@ async function loadApprovedTeachers() {
       leaveTeacherSelect.value = currentValue;
     }
 
+    // 更新請假統整表下拉選單
+    const reportTeacherSelect = document.getElementById("reportTeacherNameSelect");
+    if (reportTeacherSelect) {
+      const currentValue = reportTeacherSelect.value;
+      reportTeacherSelect.innerHTML = '<option value="">請選擇教師</option>';
+      teachers.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        reportTeacherSelect.appendChild(option);
+      });
+      reportTeacherSelect.value = currentValue;
+    }
+
   } catch (error) {
     console.error("載入已批准教師失敗：", error);
   }
@@ -1694,55 +1722,118 @@ function initializeSchoolYearSelect() {
   }
 }
 
-// ========== 請假統整報表 Modal 控制 ==========
-const leaveSummaryReportModal = document.getElementById("leaveSummaryReportModal");
-const showLeaveSummaryReportBtn = document.getElementById("showLeaveSummaryReportBtn");
-const closeLeaveSummaryReportBtn = document.getElementById("closeLeaveSummaryReportBtn");
-const closeLeaveSummaryReportBtn2 = document.getElementById("closeLeaveSummaryReportBtn2");
-const generateReportBtn = document.getElementById("generateReportBtn");
+// ========== 請假統整表表單提交 ==========
+const leaveSummaryReportForm = document.getElementById("leaveSummaryReportForm");
 
-if (showLeaveSummaryReportBtn) {
-  showLeaveSummaryReportBtn.addEventListener("click", () => {
-    if (leaveSummaryReportModal) {
-      leaveSummaryReportModal.style.display = "flex";
-      initializeSchoolYearSelect();
+if (leaveSummaryReportForm) {
+  leaveSummaryReportForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const teacherName = document.getElementById("reportTeacherNameSelect").value;
+    
+    if (!teacherName) {
+      alert("請選擇教師");
+      return;
     }
+
+    await generateTeacherLeaveSummaryReport(teacherName);
   });
 }
 
-if (closeLeaveSummaryReportBtn) {
-  closeLeaveSummaryReportBtn.addEventListener("click", () => {
-    if (leaveSummaryReportModal) {
-      leaveSummaryReportModal.style.display = "none";
-    }
-  });
-}
+// 生成特定教師的請假統整報表
+async function generateTeacherLeaveSummaryReport(teacherName) {
+  try {
+    // 獲取該教師的所有請假紀錄
+    const qRef = query(leaveCol, where("teacher", "==", teacherName), orderBy("startDate", "asc"));
+    const snap = await getDocs(qRef);
 
-if (closeLeaveSummaryReportBtn2) {
-  closeLeaveSummaryReportBtn2.addEventListener("click", () => {
-    if (leaveSummaryReportModal) {
-      leaveSummaryReportModal.style.display = "none";
-    }
-  });
-}
+    const leaveRecords = [];
+    snap.forEach((docSnap) => {
+      leaveRecords.push(docSnap.data());
+    });
 
-if (generateReportBtn) {
-  generateReportBtn.addEventListener("click", () => {
-    const schoolYearSelect = document.getElementById("reportSchoolYearSelect");
-    const selectedSchoolYear = schoolYearSelect.value;
-    if (selectedSchoolYear) {
-      generateSchoolYearLeaveReport(selectedSchoolYear);
-    }
-  });
-}
+    // 顯示教師名稱
+    const reportTeacherTitle = document.getElementById("reportTeacherTitle");
+    reportTeacherTitle.textContent = `${teacherName} - 請假統計`;
 
-// 點擊 Modal 背景時關閉
-if (leaveSummaryReportModal) {
-  leaveSummaryReportModal.addEventListener("click", (e) => {
-    if (e.target === leaveSummaryReportModal) {
-      leaveSummaryReportModal.style.display = "none";
+    // 填入詳細紀錄
+    const detailTableBody = document.querySelector("#leaveSummaryDetailTable tbody");
+    detailTableBody.innerHTML = "";
+
+    if (leaveRecords.length === 0) {
+      detailTableBody.innerHTML = '<tr><td colspan="5" class="empty-text">無請假紀錄。</td></tr>';
+    } else {
+      leaveRecords.forEach((record) => {
+        const dateStr = record.endDate 
+          ? `${record.startDate} ~ ${record.endDate}`
+          : record.startDate;
+        const hoursDisplay = convertHoursToDateFormat(record.hours);
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${record.type || ""}</td>
+          <td>${dateStr}</td>
+          <td>${hoursDisplay}</td>
+          <td>${record.agent || ""}</td>
+          <td>${record.reason || ""}</td>
+        `;
+        detailTableBody.appendChild(tr);
+      });
     }
-  });
+
+    // 按假別統計
+    const summary = {};
+    const allLeaveTypes = [
+      "事假", "病假", "公假", "家庭照顧假", "歲時祭儀假", "心理調適假"
+    ];
+
+    allLeaveTypes.forEach((type) => {
+      summary[type] = { hours: 0, count: 0 };
+    });
+
+    leaveRecords.forEach((record) => {
+      const type = record.type || "其他";
+      const hours = Number(record.hours) || 0;
+      
+      if (summary.hasOwnProperty(type)) {
+        summary[type].hours += hours;
+        summary[type].count += 1;
+      } else {
+        summary[type] = { hours, count: 1 };
+      }
+    });
+
+    // 填入統計表
+    const summaryTableBody = document.querySelector("#leaveSummaryTable tbody");
+    summaryTableBody.innerHTML = "";
+
+    let hasData = false;
+    allLeaveTypes.forEach((type) => {
+      if (summary[type].count > 0 || summary[type].hours > 0) {
+        hasData = true;
+        const hoursDisplay = convertHoursToDateFormat(summary[type].hours);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${type}</td>
+          <td>${convertHoursToDateFormat(Math.floor(summary[type].hours / 8))}</td>
+          <td>${summary[type].hours}小時</td>
+          <td>${summary[type].count}</td>
+        `;
+        summaryTableBody.appendChild(tr);
+      }
+    });
+
+    if (!hasData) {
+      summaryTableBody.innerHTML = '<tr><td colspan="4" class="empty-text">無統計資料。</td></tr>';
+    }
+
+    // 顯示容器
+    const container = document.getElementById("leaveSummaryReportContainer");
+    container.style.display = "block";
+
+  } catch (error) {
+    console.error("生成報表失敗：", error);
+    alert("生成報表失敗：" + error.message);
+  }
 }
 
 // ========== 初始載入 ==========
