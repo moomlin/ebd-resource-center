@@ -1743,12 +1743,19 @@ if (leaveSummaryReportForm) {
 async function generateTeacherLeaveSummaryReport(teacherName) {
   try {
     // 獲取該教師的所有請假紀錄
-    const qRef = query(leaveCol, where("teacher", "==", teacherName), orderBy("startDate", "asc"));
+    const qRef = query(leaveCol, where("teacher", "==", teacherName));
     const snap = await getDocs(qRef);
 
     const leaveRecords = [];
     snap.forEach((docSnap) => {
       leaveRecords.push(docSnap.data());
+    });
+
+    // 在 JavaScript 中按開始日期排序
+    leaveRecords.sort((a, b) => {
+      const dateA = new Date(a.startDate || "");
+      const dateB = new Date(b.startDate || "");
+      return dateA - dateB;
     });
 
     // 顯示教師名稱
