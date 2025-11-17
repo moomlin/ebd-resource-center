@@ -1762,31 +1762,6 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
     const reportTeacherTitle = document.getElementById("reportTeacherTitle");
     reportTeacherTitle.textContent = `${teacherName} - 請假統計`;
 
-    // 填入詳細紀錄
-    const detailTableBody = document.querySelector("#leaveSummaryDetailTable tbody");
-    detailTableBody.innerHTML = "";
-
-    if (leaveRecords.length === 0) {
-      detailTableBody.innerHTML = '<tr><td colspan="5" class="empty-text">無請假紀錄。</td></tr>';
-    } else {
-      leaveRecords.forEach((record) => {
-        const dateStr = record.endDate 
-          ? `${record.startDate} ~ ${record.endDate}`
-          : record.startDate;
-        const hoursDisplay = convertHoursToDateFormat(record.hours);
-        
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${record.type || ""}</td>
-          <td>${dateStr}</td>
-          <td>${hoursDisplay}</td>
-          <td>${record.agent || ""}</td>
-          <td>${record.reason || ""}</td>
-        `;
-        detailTableBody.appendChild(tr);
-      });
-    }
-
     // 按假別統計
     const summary = {};
     const allLeaveTypes = [
@@ -1794,7 +1769,7 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
     ];
 
     allLeaveTypes.forEach((type) => {
-      summary[type] = { hours: 0, count: 0 };
+      summary[type] = 0;
     });
 
     leaveRecords.forEach((record) => {
@@ -1802,10 +1777,9 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
       const hours = Number(record.hours) || 0;
       
       if (summary.hasOwnProperty(type)) {
-        summary[type].hours += hours;
-        summary[type].count += 1;
+        summary[type] += hours;
       } else {
-        summary[type] = { hours, count: 1 };
+        summary[type] = hours;
       }
     });
 
@@ -1813,25 +1787,32 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
     const summaryTableBody = document.querySelector("#leaveSummaryTable tbody");
     summaryTableBody.innerHTML = "";
 
-    let hasData = false;
+    let totalHours = 0;
+
+    // 顯示所有假別（包括 0 小時的）
     allLeaveTypes.forEach((type) => {
-      if (summary[type].count > 0 || summary[type].hours > 0) {
-        hasData = true;
-        const hoursDisplay = convertHoursToDateFormat(summary[type].hours);
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${type}</td>
-          <td>${convertHoursToDateFormat(Math.floor(summary[type].hours / 8))}</td>
-          <td>${summary[type].hours}小時</td>
-          <td>${summary[type].count}</td>
-        `;
-        summaryTableBody.appendChild(tr);
-      }
+      const hours = summary[type];
+      totalHours += hours;
+      const hoursDisplay = convertHoursToDateFormat(hours);
+      
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${type}</td>
+        <td>${hoursDisplay}</td>
+      `;
+      summaryTableBody.appendChild(tr);
     });
 
-    if (!hasData) {
-      summaryTableBody.innerHTML = '<tr><td colspan="4" class="empty-text">無統計資料。</td></tr>';
-    }
+    // 新增總計行
+    const totalDisplay = convertHoursToDateFormat(totalHours);
+    const totalTr = document.createElement("tr");
+    totalTr.style.fontWeight = "bold";
+    totalTr.style.backgroundColor = "#f5f5f5";
+    totalTr.innerHTML = `
+      <td>合計</td>
+      <td>${totalDisplay}</td>
+    `;
+    summaryTableBody.appendChild(totalTr);
 
     // 顯示容器
     const container = document.getElementById("leaveSummaryReportContainer");
