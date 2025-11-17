@@ -1194,7 +1194,7 @@ async function generateSchoolYearLeaveReport(schoolYear) {
 }
 
 async function loadLeaveStatistics() {
-  if (!leaveStatsTableBody || !leaveSummaryTableBody) return;
+  if (!leaveStatsTableBody) return;
 
   const statsTeacherSelect = document.getElementById(
     "statsTeacherNameSelect"
@@ -1210,16 +1210,6 @@ async function loadLeaveStatistics() {
 
   leaveStatsTableBody.innerHTML =
     "<tr><td colspan='7' class='loading-text'>載入中⋯</td></tr>";
-  leaveSummaryTableBody.innerHTML =
-    "<tr><td colspan='3' class='loading-text'>載入中⋯</td></tr>";
-  
-  const leaveSummaryReportTableBody = document.querySelector(
-    "#leaveSummaryReportTable tbody"
-  );
-  if (leaveSummaryReportTableBody) {
-    leaveSummaryReportTableBody.innerHTML =
-      "<tr><td colspan='8' class='loading-text'>載入中⋯</td></tr>";
-  }
   
   if (leaveCalendarContainer) {
     leaveCalendarContainer.innerHTML =
@@ -1279,31 +1269,6 @@ async function loadLeaveStatistics() {
         );
     }
 
-    // 各假別統計
-    const summary = {};
-    filtered.forEach(({ data: d }) => {
-      const t = d.type || "其他";
-      if (!summary[t]) summary[t] = { hours: 0, count: 0 };
-      summary[t].hours += Number(d.hours || 0);
-      summary[t].count += 1;
-    });
-
-    leaveSummaryTableBody.innerHTML = "";
-    if (Object.keys(summary).length === 0) {
-      leaveSummaryTableBody.innerHTML =
-        "<tr><td colspan='3' class='empty-text'>無統計資料。</td></tr>";
-    } else {
-      Object.keys(summary).forEach((type) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${type}</td>
-          <td>${summary[type].hours}</td>
-          <td>${summary[type].count}</td>
-        `;
-        leaveSummaryTableBody.appendChild(tr);
-      });
-    }
-
     // 月曆檢視
     if (leaveCalendarContainer) {
       renderLeaveCalendar(filtered);
@@ -1324,8 +1289,6 @@ async function loadLeaveStatistics() {
     console.error("載入請假統計錯誤：", e);
     leaveStatsTableBody.innerHTML =
       "<tr><td colspan='7' class='error-text'>讀取資料時發生錯誤。</td></tr>";
-    leaveSummaryTableBody.innerHTML =
-      "<tr><td colspan='3' class='error-text'>讀取資料時發生錯誤。</td></tr>";
     if (leaveCalendarContainer) {
       leaveCalendarContainer.innerHTML =
         "<p class='error-text'>讀取資料時發生錯誤。</p>";
@@ -1758,9 +1721,19 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
       return dateA - dateB;
     });
 
-    // 顯示教師名稱
-    const reportTeacherTitle = document.getElementById("reportTeacherTitle");
-    reportTeacherTitle.textContent = `${teacherName} - 請假統計`;
+    // 從 teamMembers 獲取教師的學校資訊
+    let teacherSchool = "特殊教育中心";
+    const teamMembersSnap = await getDocs(teamMembersCol);
+    teamMembersSnap.forEach((docSnap) => {
+      const member = docSnap.data();
+      if (member.name === teacherName && member.school) {
+        teacherSchool = member.school;
+      }
+    });
+
+    // 顯示教師名稱和學校
+    document.getElementById("reportTeacherName").textContent = teacherName;
+    document.getElementById("reportTeacherSchool").textContent = teacherSchool;
 
     // 按假別統計
     const summary = {};
@@ -1809,7 +1782,7 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
     totalTr.style.fontWeight = "bold";
     totalTr.style.backgroundColor = "#f5f5f5";
     totalTr.innerHTML = `
-      <td>合計</td>
+      <td>請假時數總計</td>
       <td>${totalDisplay}</td>
     `;
     summaryTableBody.appendChild(totalTr);

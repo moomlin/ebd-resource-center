@@ -487,24 +487,6 @@
               </div>
             </form>
 
-            <h3 class="card-title">各假別總時數</h3>
-            <table class="info-table" id="leaveSummaryTable">
-              <thead>
-                <tr>
-                  <th>假別</th>
-                  <th>總時數</th>
-                  <th>筆數</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td colspan="3" class="empty-text">
-                    尚無統計資料。
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
             <!-- 清單檢視 -->
             <div id="leaveListView">
               <h3 class="card-title">請假清單檢視</h3>
@@ -683,7 +665,7 @@
             class="card subtab-panel"
             style="display: none"
           >
-            <h3 class="card-title">請假資訊統整表（學年度統計）</h3>
+            <h3 class="card-title">查詢條件</h3>
 
             <form id="leaveSummaryReportForm" class="card">
               <div class="form-row">
@@ -703,14 +685,28 @@
               </div>
             </form>
 
-            <div id="leaveSummaryReportContainer" style="display: none;">
-              <div class="card">
-                <h3 class="card-title" id="reportTeacherTitle"></h3>
-                <table class="info-table" id="leaveSummaryTable">
+            <!-- 報表容器 -->
+            <div id="leaveSummaryReportContainer" style="display: none; margin-top: 40px; padding: 30px; background-color: #fafafa; border: 1px solid #e0d4c8;">
+              
+              <!-- 報表標題 -->
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="font-size: 18px; font-weight: bold; margin: 0 0 15px 0;">特殊教育中心請假資訊統整表</h2>
+              </div>
+
+              <!-- 教師與學校資訊 -->
+              <div id="reportTeacherInfo" style="display: flex; gap: 60px; margin-bottom: 30px; font-size: 14px;">
+                <div><span style="font-weight: bold;">教師：</span><span id="reportTeacherName"></span></div>
+                <div><span style="font-weight: bold;">任教學校：</span><span id="reportTeacherSchool"></span></div>
+              </div>
+
+              <!-- 本學年請假資訊總表 -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-weight: bold; margin: 0 0 10px 0;">本學年請假資訊總表（依各假別時數分列）</p>
+                <table class="info-table" id="leaveSummaryTable" style="background-color: white;">
                   <thead>
                     <tr>
                       <th>假別</th>
-                      <th>請假日/時數</th>
+                      <th>時數</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -722,6 +718,7 @@
                   </tbody>
                 </table>
               </div>
+
             </div>
           </section>
         </section>
