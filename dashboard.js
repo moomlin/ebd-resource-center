@@ -1031,6 +1031,71 @@ if (leaveStatsForm) {
   });
 }
 
+// 生成請假資訊統整表（按教師與假別統計）
+function generateLeaveSummaryReport(filtered, tableBody) {
+  // 所有假別
+  const allLeaveTypes = [
+    "事假",
+    "病假",
+    "公假",
+    "家庭照顧假",
+    "歲時祭儀假",
+    "心理調適假",
+  ];
+
+  // 按教師分組
+  const teacherStats = {};
+  filtered.forEach(({ data: d }) => {
+    const teacher = d.teacher || "未知";
+    const type = d.type || "其他";
+    const hours = Number(d.hours || 0);
+
+    if (!teacherStats[teacher]) {
+      teacherStats[teacher] = {};
+      allLeaveTypes.forEach((t) => {
+        teacherStats[teacher][t] = 0;
+      });
+    }
+
+    if (teacherStats[teacher].hasOwnProperty(type)) {
+      teacherStats[teacher][type] += hours;
+    } else {
+      teacherStats[teacher][type] = hours;
+    }
+  });
+
+  // 清空表格並填入資料
+  tableBody.innerHTML = "";
+
+  if (Object.keys(teacherStats).length === 0) {
+    tableBody.innerHTML =
+      "<tr><td colspan='8' class='empty-text'>無統計資料。</td></tr>";
+    return;
+  }
+
+  // 按教師名字排序
+  const sortedTeachers = Object.keys(teacherStats).sort();
+
+  sortedTeachers.forEach((teacher) => {
+    const stats = teacherStats[teacher];
+    let total = 0;
+
+    const cells = allLeaveTypes.map((type) => {
+      const hours = stats[type] || 0;
+      total += hours;
+      return `<td>${hours}</td>`;
+    });
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${teacher}</td>
+      ${cells.join("")}
+      <td><strong>${total}</strong></td>
+    `;
+    tableBody.appendChild(tr);
+  });
+}
+
 async function loadLeaveStatistics() {
   if (!leaveStatsTableBody || !leaveSummaryTableBody) return;
 
@@ -1050,6 +1115,15 @@ async function loadLeaveStatistics() {
     "<tr><td colspan='7' class='loading-text'>載入中⋯</td></tr>";
   leaveSummaryTableBody.innerHTML =
     "<tr><td colspan='3' class='loading-text'>載入中⋯</td></tr>";
+  
+  const leaveSummaryReportTableBody = document.querySelector(
+    "#leaveSummaryReportTable tbody"
+  );
+  if (leaveSummaryReportTableBody) {
+    leaveSummaryReportTableBody.innerHTML =
+      "<tr><td colspan='8' class='loading-text'>載入中⋯</td></tr>";
+  }
+  
   if (leaveCalendarContainer) {
     leaveCalendarContainer.innerHTML =
       "<p class='loading-text'>載入中⋯</p>";
@@ -1131,6 +1205,11 @@ async function loadLeaveStatistics() {
         `;
         leaveSummaryTableBody.appendChild(tr);
       });
+    }
+
+    // 請假資訊統整表（按教師統計各假別時數）
+    if (leaveSummaryReportTableBody) {
+      generateLeaveSummaryReport(filtered, leaveSummaryReportTableBody);
     }
 
     // 月曆檢視
@@ -1387,6 +1466,7 @@ async function approveUser(docId) {
     await updateDoc(userDocRef, { status: "approved" });
     alert("已批准該用戶");
     loadUserApprovals();
+    loadApprovedTeachers(); // 重新載入教師列表
   } catch (error) {
     console.error("批准用戶失敗：", error);
     alert("批准失敗：" + error.message);
@@ -1402,6 +1482,7 @@ async function rejectUser(docId) {
     await updateDoc(userDocRef, { status: "rejected" });
     alert("已拒絕該用戶");
     loadUserApprovals();
+    loadApprovedTeachers(); // 重新載入教師列表
   } catch (error) {
     console.error("拒絕用戶失敗：", error);
     alert("拒絕失敗：" + error.message);
@@ -1423,8 +1504,74 @@ async function deleteUser(docId) {
   }
 }
 
+// 載入已批准的教師到下拉選單
+async function loadApprovedTeachers() {
+  try {
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("status", "==", "approved"));
+    const querySnapshot = await getDocs(q);
+
+    const teachers = [];
+    querySnapshot.forEach((doc) => {
+      const userData = doc.data();
+      if (userData.name) {
+        teachers.push(userData.name);
+      }
+    });
+
+    // 按姓名字母排序
+    teachers.sort();
+
+    // 更新團隊教師名單的下拉選單
+    const teamNameSelect = document.getElementById("teamName");
+    if (teamNameSelect) {
+      const currentValue = teamNameSelect.value;
+      teamNameSelect.innerHTML = '<option value="">請選擇已審核通過的教師</option>';
+      teachers.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        teamNameSelect.appendChild(option);
+      });
+      teamNameSelect.value = currentValue;
+    }
+
+    // 更新請假查詢下拉選單
+    const statsTeacherSelect = document.getElementById("statsTeacherNameSelect");
+    if (statsTeacherSelect) {
+      const currentValue = statsTeacherSelect.value;
+      statsTeacherSelect.innerHTML = '<option value="">全部教師</option>';
+      teachers.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        statsTeacherSelect.appendChild(option);
+      });
+      statsTeacherSelect.value = currentValue;
+    }
+
+    // 更新請假登記下拉選單
+    const leaveTeacherSelect = document.getElementById("leaveTeacherName");
+    if (leaveTeacherSelect) {
+      const currentValue = leaveTeacherSelect.value;
+      leaveTeacherSelect.innerHTML = '<option value="">請選擇教師</option>';
+      teachers.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        leaveTeacherSelect.appendChild(option);
+      });
+      leaveTeacherSelect.value = currentValue;
+    }
+
+  } catch (error) {
+    console.error("載入已批准教師失敗：", error);
+  }
+}
+
 // ========== 初始載入 ==========
 loadFiles();
+loadApprovedTeachers();
 loadTeamMembers();
 loadRecentLeaveRecords();
 loadLeaveStatistics();

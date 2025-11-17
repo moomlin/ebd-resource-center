@@ -1,8 +1,27 @@
+# Dependencies
 node_modules/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# IDE files
 .vscode/
+.idea/
+*.swp
+*.swo
+
+# Build files
+dist/
+build/
+
+# Environment
 .env
+.env.local
+
+# Netlify
 .netlify/
+
+# VS Code Application
 VS程式檔案/
 optional.gitignore_global
-*.zip

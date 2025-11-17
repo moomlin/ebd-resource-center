@@ -306,7 +306,9 @@
               </div>
               <div class="form-col-half">
                 <label for="teamName">姓名</label>
-                <input type="text" id="teamName" />
+                <select id="teamName" required>
+                  <option value="">請選擇已審核通過的教師</option>
+                </select>
               </div>
             </div>
 
@@ -426,9 +428,6 @@
                   >
                   <select id="statsTeacherNameSelect">
                     <option value="">全部教師</option>
-                    <option value="張老師">張老師</option>
-                    <option value="李老師">李老師</option>
-                    <option value="王老師">王老師</option>
                   </select>
                 </div>
 
@@ -450,6 +449,8 @@
                     <option value="病假">病假</option>
                     <option value="公假">公假</option>
                     <option value="家庭照顧假">家庭照顧假</option>
+                    <option value="歲時祭儀假">歲時祭儀假</option>
+                    <option value="心理調適假">心理調適假</option>
                   </select>
                 </div>
               </div>
@@ -492,6 +493,29 @@
               <tbody>
                 <tr>
                   <td colspan="3" class="empty-text">
+                    尚無統計資料。
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3 class="card-title">請假資訊統整表</h3>
+            <table class="info-table" id="leaveSummaryReportTable">
+              <thead>
+                <tr>
+                  <th>教師姓名</th>
+                  <th>事假</th>
+                  <th>病假</th>
+                  <th>公假</th>
+                  <th>家庭照顧假</th>
+                  <th>歲時祭儀假</th>
+                  <th>心理調適假</th>
+                  <th>合計</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="8" class="empty-text">
                     尚無統計資料。
                   </td>
                 </tr>
@@ -566,18 +590,18 @@
                   <label for="leaveTeacherName">請假人姓名</label>
                   <select id="leaveTeacherName" required>
                     <option value="">請選擇教師</option>
-                    <option value="張老師">張老師</option>
-                    <option value="李老師">李老師</option>
-                    <option value="王老師">王老師</option>
                   </select>
                 </div>
                 <div class="form-col-half">
                   <label for="leaveType">假別</label>
                   <select id="leaveType" required>
+                    <option value="">請選擇假別</option>
                     <option value="事假">事假</option>
                     <option value="病假">病假</option>
                     <option value="公假">公假</option>
                     <option value="家庭照顧假">家庭照顧假</option>
+                    <option value="歲時祭儀假">歲時祭儀假</option>
+                    <option value="心理調適假">心理調適假</option>
                   </select>
                 </div>
               </div>
