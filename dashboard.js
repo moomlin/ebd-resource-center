@@ -1031,7 +1031,7 @@ if (leaveStatsForm) {
   });
 }
 
-// 生成請假資訊統整表（按教師與假別統計）
+// 生成請假資訊統整表（按教師與假別統計）- 按學年度
 function generateLeaveSummaryReport(filtered, tableBody) {
   // 所有假別
   const allLeaveTypes = [
@@ -1094,6 +1094,103 @@ function generateLeaveSummaryReport(filtered, tableBody) {
     `;
     tableBody.appendChild(tr);
   });
+}
+
+// 根據年份計算學年度開始和結束日期 (8/1 ~ 隔年 7/31)
+function getSchoolYearDateRange(schoolYear) {
+  // schoolYear 格式: "2024-2025" 表示 2024/8/1 ~ 2025/7/31
+  const startYear = parseInt(schoolYear.split("-")[0]);
+  const startDate = `${startYear}-08-01`;
+  const endDate = `${startYear + 1}-07-31`;
+  return { startDate, endDate };
+}
+
+// 統計學年度的請假資訊
+async function generateSchoolYearLeaveReport(schoolYear) {
+  const { startDate, endDate } = getSchoolYearDateRange(schoolYear);
+  
+  try {
+    const qRef = query(leaveCol, orderBy("startDate", "asc"));
+    const snap = await getDocs(qRef);
+
+    const filtered = [];
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+      const id = docSnap.id;
+
+      // 篩選出在學年度範圍內的請假記錄
+      if (d.startDate >= startDate && d.startDate <= endDate) {
+        filtered.push({ id, data: d });
+      }
+    });
+
+    const allLeaveTypes = [
+      "事假",
+      "病假",
+      "公假",
+      "家庭照顧假",
+      "歲時祭儀假",
+      "心理調適假",
+    ];
+
+    // 按教師分組統計
+    const teacherStats = {};
+    filtered.forEach(({ data: d }) => {
+      const teacher = d.teacher || "未知";
+      const type = d.type || "其他";
+      const hours = Number(d.hours || 0);
+
+      if (!teacherStats[teacher]) {
+        teacherStats[teacher] = {};
+        allLeaveTypes.forEach((t) => {
+          teacherStats[teacher][t] = 0;
+        });
+      }
+
+      if (teacherStats[teacher].hasOwnProperty(type)) {
+        teacherStats[teacher][type] += hours;
+      } else {
+        teacherStats[teacher][type] = hours;
+      }
+    });
+
+    // 填入報表表格
+    const reportTableBody = document.querySelector(
+      "#leaveSummaryReportTable tbody"
+    );
+    reportTableBody.innerHTML = "";
+
+    if (Object.keys(teacherStats).length === 0) {
+      reportTableBody.innerHTML =
+        "<tr><td colspan='8' class='empty-text'>此學年度無請假記錄。</td></tr>";
+      return;
+    }
+
+    const sortedTeachers = Object.keys(teacherStats).sort();
+
+    sortedTeachers.forEach((teacher) => {
+      const stats = teacherStats[teacher];
+      let total = 0;
+
+      const cells = allLeaveTypes.map((type) => {
+        const hours = stats[type] || 0;
+        total += hours;
+        return `<td>${hours}</td>`;
+      });
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${teacher}</td>
+        ${cells.join("")}
+        <td><strong>${total}</strong></td>
+      `;
+      reportTableBody.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error("生成學年度報表失敗：", error);
+    alert("生成報表失敗：" + error.message);
+  }
 }
 
 async function loadLeaveStatistics() {
@@ -1205,11 +1302,6 @@ async function loadLeaveStatistics() {
         `;
         leaveSummaryTableBody.appendChild(tr);
       });
-    }
-
-    // 請假資訊統整表（按教師統計各假別時數）
-    if (leaveSummaryReportTableBody) {
-      generateLeaveSummaryReport(filtered, leaveSummaryReportTableBody);
     }
 
     // 月曆檢視
@@ -1567,6 +1659,90 @@ async function loadApprovedTeachers() {
   } catch (error) {
     console.error("載入已批准教師失敗：", error);
   }
+}
+
+// 初始化學年度下拉選單
+function initializeSchoolYearSelect() {
+  const schoolYearSelect = document.getElementById("reportSchoolYearSelect");
+  if (!schoolYearSelect) return;
+
+  schoolYearSelect.innerHTML = "";
+
+  // 產生過去 5 年和未來 2 年的學年度選項
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1;
+
+  // 判斷當前的學年度 (8月後開始新學年)
+  let currentSchoolYear = currentYear;
+  if (currentMonth < 8) {
+    currentSchoolYear = currentYear - 1;
+  }
+
+  // 產生選項：過去 5 年到未來 2 年
+  for (let year = currentSchoolYear - 5; year <= currentSchoolYear + 2; year++) {
+    const option = document.createElement("option");
+    option.value = `${year}-${year + 1}`;
+    option.textContent = `${year}年度 (${year}/8/1 ~ ${year + 1}/7/31)`;
+    
+    // 預設選擇當前學年度
+    if (year === currentSchoolYear) {
+      option.selected = true;
+    }
+    
+    schoolYearSelect.appendChild(option);
+  }
+}
+
+// ========== 請假統整報表 Modal 控制 ==========
+const leaveSummaryReportModal = document.getElementById("leaveSummaryReportModal");
+const showLeaveSummaryReportBtn = document.getElementById("showLeaveSummaryReportBtn");
+const closeLeaveSummaryReportBtn = document.getElementById("closeLeaveSummaryReportBtn");
+const closeLeaveSummaryReportBtn2 = document.getElementById("closeLeaveSummaryReportBtn2");
+const generateReportBtn = document.getElementById("generateReportBtn");
+
+if (showLeaveSummaryReportBtn) {
+  showLeaveSummaryReportBtn.addEventListener("click", () => {
+    if (leaveSummaryReportModal) {
+      leaveSummaryReportModal.style.display = "flex";
+      initializeSchoolYearSelect();
+    }
+  });
+}
+
+if (closeLeaveSummaryReportBtn) {
+  closeLeaveSummaryReportBtn.addEventListener("click", () => {
+    if (leaveSummaryReportModal) {
+      leaveSummaryReportModal.style.display = "none";
+    }
+  });
+}
+
+if (closeLeaveSummaryReportBtn2) {
+  closeLeaveSummaryReportBtn2.addEventListener("click", () => {
+    if (leaveSummaryReportModal) {
+      leaveSummaryReportModal.style.display = "none";
+    }
+  });
+}
+
+if (generateReportBtn) {
+  generateReportBtn.addEventListener("click", () => {
+    const schoolYearSelect = document.getElementById("reportSchoolYearSelect");
+    const selectedSchoolYear = schoolYearSelect.value;
+    if (selectedSchoolYear) {
+      generateSchoolYearLeaveReport(selectedSchoolYear);
+    }
+  });
+}
+
+// 點擊 Modal 背景時關閉
+if (leaveSummaryReportModal) {
+  leaveSummaryReportModal.addEventListener("click", (e) => {
+    if (e.target === leaveSummaryReportModal) {
+      leaveSummaryReportModal.style.display = "none";
+    }
+  });
 }
 
 // ========== 初始載入 ==========
