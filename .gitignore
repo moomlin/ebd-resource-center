@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+.vscode/
+.env
+.netlify/
+VS程式檔案/
+optional.gitignore_global
+*.zip

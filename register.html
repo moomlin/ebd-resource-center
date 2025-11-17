@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>註冊帳號</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f3c7c7, #f1dfc4);
+      padding: 20px;
+    }
+    .register-container {
+      background-color: rgba(255,255,255,0.96);
+      padding: 40px;
+      border-radius: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 450px;
+    }
+    .register-container h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: #4b3734;
+      text-align: center;
+    }
+    .register-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #e8ddd8;
+    }
+    .register-tabs button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #999;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .register-tabs button.active {
+      color: #4b3734;
+      border-bottom-color: #c2878f;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #4b3734;
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d5c8c3;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: "Microsoft JhengHei", sans-serif;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #c2878f;
+      background-color: #fef9f7;
+    }
+    .form-group input[type="date"] {
+      padding: 8px 12px;
+    }
+    .required {
+      color: #e74c3c;
+    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    button[type="submit"],
+    button[type="button"],
+    .google-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    button[type="submit"],
+    .google-btn {
+      background-color: #c2878f;
+      color: #fff;
+    }
+    button[type="submit"]:hover,
+    .google-btn:hover {
+      background-color: #b06c76;
+    }
+    button[type="button"] {
+      background-color: #e8ddd8;
+      color: #4b3734;
+    }
+    button[type="button"]:hover {
+      background-color: #d5c8c3;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 16px;
+    }
+    .back-link a {
+      color: #c2878f;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 14px;
+      margin-top: 4px;
+      display: none;
+    }
+    .success-message {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .success-page {
+      display: none;
+      text-align: center;
+    }
+    .success-page.active {
+      display: block;
+    }
+    .success-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .success-page h3 {
+      color: #155724;
+      margin: 16px 0;
+      font-size: 20px;
+    }
+    .success-page p {
+      color: #155724;
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .success-page .button-group {
+      margin-top: 24px;
+      flex-direction: column;
+    }
+    .success-page button {
+      background-color: #c2878f;
+      color: #fff;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .success-page button:hover {
+      background-color: #b06c76;
+    }
+    .loading {
+      text-align: center;
+      color: #999;
+      font-size: 14px;
+      margin-top: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <h2>加入情支團隊</h2>
+    
+    <div class="register-tabs">
+      <button class="tab-btn active" data-tab="password">帳號密碼</button>
+      <button class="tab-btn" data-tab="google">Google 帳號</button>
+    </div>
+
+    <!-- 密碼註冊表單 -->
+    <form id="passwordRegisterForm" class="tab-content active">
+      <div class="form-group">
+        <label for="passwordEmail">電子郵件 <span class="required">*</span></label>
+        <input type="email" id="passwordEmail" required placeholder="your@email.com" />
+        <div class="error-message" id="passwordEmailError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordPassword">密碼 <span class="required">*</span></label>
+        <input type="password" id="passwordPassword" required placeholder="至少 6 個字元" />
+        <div class="error-message" id="passwordPasswordError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordConfirm">確認密碼 <span class="required">*</span></label>
+        <input type="password" id="passwordConfirm" required placeholder="確認密碼" />
+        <div class="error-message" id="passwordConfirmError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordName">姓名 <span class="required">*</span></label>
+        <input type="text" id="passwordName" required placeholder="請輸入姓名" />
+        <div class="error-message" id="passwordNameError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordBirthDate">生日 <span class="required">*</span></label>
+        <input type="date" id="passwordBirthDate" required />
+        <div class="error-message" id="passwordBirthDateError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordSchool">任教學校 <span class="required">*</span></label>
+        <input type="text" id="passwordSchool" required placeholder="請輸入學校名稱" />
+        <div class="error-message" id="passwordSchoolError"></div>
+      </div>
+      <div class="form-group">
+        <label for="passwordTeamRole">擔任情支團隊職位 <span class="required">*</span></label>
+        <select id="passwordTeamRole" required>
+          <option value="">請選擇職位</option>
+          <option value="leader">召集人</option>
+          <option value="supervisor">專業督導</option>
+          <option value="deputy">副召集人</option>
+          <option value="teacher">專業教師</option>
+          <option value="secretary">執行秘書</option>
+        </select>
+        <div class="error-message" id="passwordTeamRoleError"></div>
+      </div>
+      <div class="button-group">
+        <button type="submit">註冊</button>
+        <button type="button" onclick="window.location.href='login.html'">返回</button>
+      </div>
+    </form>
+
+    <!-- Google 註冊表單 -->
+    <form id="googleRegisterForm" class="tab-content">
+      <div class="form-group">
+        <label for="googleName">姓名 <span class="required">*</span></label>
+        <input type="text" id="googleName" placeholder="請輸入姓名" />
+        <div class="error-message" id="googleNameError"></div>
+      </div>
+      <div class="form-group">
+        <label for="googleBirthDate">生日 <span class="required">*</span></label>
+        <input type="date" id="googleBirthDate" />
+        <div class="error-message" id="googleBirthDateError"></div>
+      </div>
+      <div class="form-group">
+        <label for="googleSchool">任教學校 <span class="required">*</span></label>
+        <input type="text" id="googleSchool" placeholder="請輸入學校名稱" />
+        <div class="error-message" id="googleSchoolError"></div>
+      </div>
+      <div class="form-group">
+        <label for="googleTeamRole">擔任情支團隊職位 <span class="required">*</span></label>
+        <select id="googleTeamRole" required>
+          <option value="">請選擇職位</option>
+          <option value="leader">召集人</option>
+          <option value="supervisor">專業督導</option>
+          <option value="deputy">副召集人</option>
+          <option value="teacher">專業教師</option>
+          <option value="secretary">執行秘書</option>
+        </select>
+        <div class="error-message" id="googleTeamRoleError"></div>
+      </div>
+      <div class="button-group">
+        <button type="button" class="google-btn" id="googleRegisterBtn">使用 Google 帳號註冊</button>
+        <button type="button" onclick="window.location.href='login.html'">返回</button>
+      </div>
+    </form>
+
+    <div class="success-message" id="successMessage"></div>
+    <div class="loading" id="loading">處理中...</div>
+
+    <!-- 成功註冊頁面 -->
+    <div class="success-page" id="successPage">
+      <div class="success-icon">✅</div>
+      <h3>註冊成功！</h3>
+      <p id="successText">
+        您的帳號已成功創建，請等待管理員核准。<br>
+        核准後您將可以登入後台管理系統。
+      </p>
+      <div class="button-group">
+        <button onclick="window.location.href='login.html'">前往登入頁面</button>
+      </div>
+    </div>
+
+    <div class="back-link" id="backLink">
+      <a href="login.html">已有帳號？直接登入</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDiinzeBHJi8ReCOe4pkIl6j3Y9wTwphtc",
+      authDomain: "ebd-case-pro-manager-system.firebaseapp.com",
+      projectId: "ebd-case-pro-manager-system",
+      storageBucket: "ebd-case-pro-manager-system.firebasestorage.app",
+      messagingSenderId: "704486903894",
+      appId: "1:704486903894:web:9a8f3879c4a06cf7602bf7",
+      measurementId: "G-CHRM369TK6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // 標籤切換
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const tabName = e.target.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+        e.target.classList.add("active");
+        document.getElementById(`${tabName}RegisterForm`).classList.add("active");
+      });
+    });
+
+    // 密碼註冊
+    document.getElementById("passwordRegisterForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById("passwordEmail").value;
+      const password = document.getElementById("passwordPassword").value;
+      const passwordConfirm = document.getElementById("passwordConfirm").value;
+      const name = document.getElementById("passwordName").value;
+      const birthDate = document.getElementById("passwordBirthDate").value;
+      const school = document.getElementById("passwordSchool").value;
+      const teamRole = document.getElementById("passwordTeamRole").value;
+
+      // 清除錯誤訊息
+      document.querySelectorAll(".error-message").forEach((m) => m.style.display = "none");
+      document.getElementById("successMessage").style.display = "none";
+
+      let hasError = false;
+
+      // 驗證
+      if (!email) {
+        showError("passwordEmailError", "請填入電子郵件");
+        hasError = true;
+      }
+      if (password.length < 6) {
+        showError("passwordPasswordError", "密碼至少需要 6 個字元");
+        hasError = true;
+      }
+      if (password !== passwordConfirm) {
+        showError("passwordConfirmError", "密碼不相符");
+        hasError = true;
+      }
+      if (!name) {
+        showError("passwordNameError", "請填入姓名");
+        hasError = true;
+      }
+      if (!birthDate) {
+        showError("passwordBirthDateError", "請選擇生日");
+        hasError = true;
+      }
+      if (!school) {
+        showError("passwordSchoolError", "請填入任教學校");
+        hasError = true;
+      }
+      if (!teamRole) {
+        showError("passwordTeamRoleError", "請選擇職位");
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      try {
+        document.getElementById("loading").style.display = "block";
+
+        // 建立帳號
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+
+        // 保存使用者資料到 Firestore
+        await addDoc(collection(db, "users"), {
+          uid: uid,
+          email: email,
+          name: name,
+          birthDate: birthDate,
+          school: school,
+          teamRole: teamRole,
+          registrationDate: new Date(),
+          status: "pending", // 待管理員核准
+          registrationType: "password"
+        });
+
+        document.getElementById("loading").style.display = "none";
+        // 隱藏表單和選項卡，顯示成功頁面
+        document.querySelectorAll(".tab-content").forEach((c) => c.style.display = "none");
+        document.querySelector(".register-tabs").style.display = "none";
+        document.getElementById("backLink").style.display = "none";
+        document.getElementById("successPage").classList.add("active");
+      } catch (error) {
+        document.getElementById("loading").style.display = "none";
+        if (error.code === "auth/email-already-in-use") {
+          showError("passwordEmailError", "此電子郵件已註冊");
+        } else if (error.code === "auth/invalid-email") {
+          showError("passwordEmailError", "無效的電子郵件");
+        } else {
+          alert("註冊失敗：" + error.message);
+        }
+      }
+    });
+
+    // Google 註冊
+    document.getElementById("googleRegisterBtn").addEventListener("click", async () => {
+      const name = document.getElementById("googleName").value;
+      const birthDate = document.getElementById("googleBirthDate").value;
+      const school = document.getElementById("googleSchool").value;
+      const teamRole = document.getElementById("googleTeamRole").value;
+
+      // 清除錯誤訊息
+      document.querySelectorAll(".error-message").forEach((m) => m.style.display = "none");
+      document.getElementById("successMessage").style.display = "none";
+
+      let hasError = false;
+
+      if (!name) {
+        showError("googleNameError", "請填入姓名");
+        hasError = true;
+      }
+      if (!birthDate) {
+        showError("googleBirthDateError", "請選擇生日");
+        hasError = true;
+      }
+      if (!school) {
+        showError("googleSchoolError", "請填入任教學校");
+        hasError = true;
+      }
+      if (!teamRole) {
+        showError("googleTeamRoleError", "請選擇職位");
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      try {
+        document.getElementById("loading").style.display = "block";
+
+        // Google 登入
+        const result = await signInWithPopup(auth, googleProvider);
+        const uid = result.user.uid;
+        const email = result.user.email;
+
+        // 保存使用者資料到 Firestore
+        await addDoc(collection(db, "users"), {
+          uid: uid,
+          email: email,
+          name: name,
+          birthDate: birthDate,
+          school: school,
+          teamRole: teamRole,
+          registrationDate: new Date(),
+          status: "pending", // 待管理員核准
+          registrationType: "google"
+        });
+
+        document.getElementById("loading").style.display = "none";
+        // 隱藏表單和選項卡，顯示成功頁面
+        document.querySelectorAll(".tab-content").forEach((c) => c.style.display = "none");
+        document.querySelector(".register-tabs").style.display = "none";
+        document.getElementById("backLink").style.display = "none";
+        document.getElementById("successPage").classList.add("active");
+      } catch (error) {
+        document.getElementById("loading").style.display = "none";
+        console.error("Google 註冊錯誤:", error);
+        alert("Google 註冊失敗：" + error.message);
+      }
+    });
+
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.style.display = "block";
+    }
+
+    function showSuccess(message) {
+      const element = document.getElementById("successMessage");
+      element.textContent = message;
+      element.style.display = "block";
+    }
+  </script>
+</body>
+</html>

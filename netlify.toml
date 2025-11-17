@@ -1,0 +1,9 @@
+# Netlify Configuration
+[build]
+  # 不需要建置步驟，直接使用靜態檔案
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/myweb.html"
+  status = 200

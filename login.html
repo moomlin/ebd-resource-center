@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>老師登入</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f3c7c7, #f1dfc4);
+    }
+    .login-box {
+      background-color: rgba(255,255,255,0.96);
+      padding: 40px 35px;
+      border-radius: 18px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    .login-box h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 24px;
+      color: #4b3734;
+    }
+    .login-box p {
+      font-size: 13px;
+      margin-bottom: 28px;
+      color: #6e5b58;
+    }
+    .login-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      border-bottom: 2px solid #e8ddd8;
+    }
+    .login-tabs button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-size: 15px;
+      cursor: pointer;
+      color: #999;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .login-tabs button.active {
+      color: #4b3734;
+      border-bottom-color: #c2878f;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+      color: #4b3734;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d5c8c3;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #c2878f;
+      background-color: #fef9f7;
+    }
+    .error-message {
+      color: #e74c3c;
+      font-size: 13px;
+      margin-top: 4px;
+      display: none;
+      text-align: left;
+    }
+    .success-message {
+      background-color: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 13px;
+    }
+    .loading {
+      text-align: center;
+      color: #999;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .submit-btn,
+    .google-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      background-color: #c2878f;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 10px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .submit-btn:hover,
+    .google-btn:hover {
+      background-color: #b06c76;
+    }
+    .divider {
+      margin: 16px 0;
+      text-align: center;
+      font-size: 13px;
+      color: #999;
+    }
+    .divider::before,
+    .divider::after {
+      content: "";
+      display: inline-block;
+      width: 45%;
+      height: 1px;
+      background-color: #e8ddd8;
+      vertical-align: middle;
+    }
+    .divider::before {
+      margin-right: 8px;
+    }
+    .divider::after {
+      margin-left: 8px;
+    }
+    .footer-links {
+      margin-top: 18px;
+      font-size: 13px;
+    }
+    .footer-links a {
+      color: #c2878f;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>團隊老師登入</h2>
+    <p>請選擇登入方式</p>
+
+    <div class="success-message" id="successMessage"></div>
+    <div class="loading" id="loading">登入中...</div>
+
+    <div class="login-tabs">
+      <button class="tab-btn active" data-tab="password">帳號密碼</button>
+      <button class="tab-btn" data-tab="google">Google 帳號</button>
+    </div>
+
+    <!-- 密碼登入表單 -->
+    <form id="passwordLoginForm" class="tab-content active">
+      <div class="form-group">
+        <label for="loginEmail">電子郵件</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" required />
+        <div class="error-message" id="loginEmailError"></div>
+      </div>
+      <div class="form-group">
+        <label for="loginPassword">密碼</label>
+        <input type="password" id="loginPassword" placeholder="輸入密碼" required />
+        <div class="error-message" id="loginPasswordError"></div>
+      </div>
+      <button type="submit" class="submit-btn">登入</button>
+      <div class="error-message" id="loginGeneralError"></div>
+    </form>
+
+    <!-- Google 登入表單 -->
+    <div id="googleLoginForm" class="tab-content">
+      <button type="button" class="google-btn" id="googleLoginBtn">使用 Google 帳號登入</button>
+    </div>
+
+    <div class="divider">或</div>
+
+    <div class="footer-links">
+      <a href="register.html">還沒有帳號？立即註冊</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDiinzeBHJi8ReCOe4pkIl6j3Y9wTwphtc",
+      authDomain: "ebd-case-pro-manager-system.firebaseapp.com",
+      projectId: "ebd-case-pro-manager-system",
+      storageBucket: "ebd-case-pro-manager-system.firebasestorage.app",
+      messagingSenderId: "704486903894",
+      appId: "1:704486903894:web:9a8f3879c4a06cf7602bf7",
+      measurementId: "G-CHRM369TK6"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // 標籤切換
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const tabName = e.target.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach((c) => c.classList.remove("active"));
+        e.target.classList.add("active");
+        document.getElementById(`${tabName}LoginForm`).classList.add("active");
+      });
+    });
+
+    // 密碼登入
+    document.getElementById("passwordLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      // 清除錯誤訊息
+      document.querySelectorAll(".error-message").forEach((m) => m.style.display = "none");
+
+      try {
+        document.getElementById("loading").style.display = "block";
+
+        // 驗證帳號
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+
+        // 檢查使用者是否在 Firestore 中且已核准
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        document.getElementById("loading").style.display = "none";
+
+        if (querySnapshot.empty) {
+          showError("loginGeneralError", "您的帳號尚未完成註冊");
+          return;
+        }
+
+        const userData = querySnapshot.docs[0].data();
+
+        if (userData.status === "pending") {
+          showError("loginGeneralError", "您的帳號正在等待管理員核准");
+          return;
+        } else if (userData.status === "rejected") {
+          showError("loginGeneralError", "您的帳號已被拒絕");
+          return;
+        }
+
+        // 登入成功
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        document.getElementById("loading").style.display = "none";
+        if (error.code === "auth/user-not-found") {
+          showError("loginEmailError", "找不到此電子郵件的帳號");
+        } else if (error.code === "auth/wrong-password") {
+          showError("loginPasswordError", "密碼不正確");
+        } else if (error.code === "auth/invalid-email") {
+          showError("loginEmailError", "電子郵件格式不正確");
+        } else {
+          showError("loginGeneralError", "登入失敗：" + error.message);
+        }
+      }
+    });
+
+    // Google 登入
+    document.getElementById("googleLoginBtn").addEventListener("click", async () => {
+      try {
+        document.getElementById("loading").style.display = "block";
+
+        const result = await signInWithPopup(auth, googleProvider);
+        const uid = result.user.uid;
+        const email = result.user.email;
+
+        // 檢查使用者是否在 Firestore 中且已核准
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", uid));
+        const querySnapshot = await getDocs(q);
+
+        document.getElementById("loading").style.display = "none";
+
+        if (querySnapshot.empty) {
+          alert("您的 Google 帳號尚未在本系統中註冊。請先前往註冊頁面完成註冊。");
+          window.location.href = "register.html";
+          return;
+        }
+
+        const userData = querySnapshot.docs[0].data();
+
+        if (userData.status === "pending") {
+          alert("您的帳號正在等待管理員核准。請稍候。");
+          return;
+        } else if (userData.status === "rejected") {
+          alert("您的帳號已被拒絕");
+          return;
+        }
+
+        // 登入成功
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        document.getElementById("loading").style.display = "none";
+        console.error("Google 登入錯誤:", error);
+        alert("Google 登入失敗：" + error.message);
+      }
+    });
+
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.style.display = "block";
+    }
+
+    function showSuccess(message) {
+      const element = document.getElementById("successMessage");
+      element.textContent = message;
+      element.style.display = "block";
+    }
+  </script>
+</body>
+</html>

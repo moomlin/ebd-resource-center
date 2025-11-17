@@ -1,0 +1,619 @@
+/* ========= 基本設定 ========= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: linear-gradient(135deg, #ffe0d4, #ffeadd);
+  color: #4a3a36;
+}
+
+/* ========= 版面 ========= */
+
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+/* 左側欄 */
+
+.sidebar {
+  width: 260px;
+  background: #6e8b70;
+  color: #fdf7f2;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 20px;
+}
+
+.sidebar-header h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 2px;
+}
+
+.sidebar-subtitle {
+  margin: 4px 0 12px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.sidebar-user {
+  font-size: 13px;
+  margin-bottom: 16px;
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+
+.sidebar-user-label {
+  opacity: 0.8;
+}
+
+.sidebar-user-email {
+  display: block;
+  margin-top: 2px;
+  word-break: break-all;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: auto;
+  margin-top: 10px;
+}
+
+.admin-menu-item {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  margin-bottom: 5px;
+  font-size: 15px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.13);
+  color: #fdf7f2;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.admin-menu-item:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+}
+
+.admin-menu-item.active {
+  background: #f5c3bf;
+  color: #4a3a36;
+}
+
+.admin-menu-link {
+  display: block;
+  border-radius: 999px;
+  padding: 10px 16px;
+  margin-bottom: 5px;
+  font-size: 15px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.13);
+  color: #fdf7f2;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.admin-menu-link:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.logout-btn {
+  margin-top: 18px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  border: none;
+  background: #f5c3bf;
+  color: #4a3a36;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 右側主區 */
+
+.main-content {
+  flex: 1;
+  padding: 24px 28px;
+  overflow: auto;
+}
+
+.admin-section {
+  display: block;
+  width: 100%;
+  min-height: 400px;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 24px;
+  letter-spacing: 1px;
+}
+
+.section-header p {
+  margin: 8px 0 16px;
+  font-size: 14px;
+  color: #6a5650;
+}
+
+/* 卡片 */
+
+.card {
+  background: rgba(255, 249, 245, 0.9);
+  border-radius: 18px;
+  padding: 18px 20px 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 30px rgba(179, 137, 120, 0.15);
+}
+
+.card-title {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+/* ========= 表單 ========= */
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-col,
+.form-col-half,
+.form-col-full {
+  flex: 1;
+  min-width: 0;
+}
+
+.form-col-half {
+  flex: 1 1 50%;
+}
+
+.form-col-full {
+  flex: 1 1 100%;
+}
+
+.form-col-half label,
+.form-col label,
+.form-col-full label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #d7c0b8;
+  font: inherit;
+  background: #fffdfb;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #f0a59a;
+  box-shadow: 0 0 0 1px rgba(240, 165, 154, 0.3);
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* 情支欄位 group */
+
+#fileServiceGroup {
+  display: none;
+}
+
+#fileServiceGroup .form-col-half {
+  flex: 1 1 50%;
+}
+
+/* ========= 按鈕 ========= */
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.form-actions.right-actions {
+  justify-content: flex-end;
+}
+
+button {
+  font: inherit;
+}
+
+.form-actions button,
+.logout-btn {
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: #f0a59a;
+  color: #fff;
+  font-weight: 600;
+}
+
+.form-actions button:hover,
+.logout-btn:hover {
+  filter: brightness(0.95);
+}
+
+.btn-secondary {
+  background: #f5c3bf;
+  color: #4a3a36;
+}
+
+.btn-tertiary {
+  background: #e4dedb;
+  color: #4a3a36;
+}
+
+.btn-danger {
+  background: #e8b4b1;
+  color: #6c3a36;
+}
+
+.btn-danger:hover {
+  background: #d99c98;
+}
+
+/* ========= 表格 ========= */
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 6px;
+}
+
+.info-table thead {
+  background: #f6d7cf;
+}
+
+.info-table th,
+.info-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #edd7d0;
+}
+
+.info-table tbody tr:nth-child(even) {
+  background: #fff7f3;
+}
+
+.empty-text,
+.loading-text,
+.error-text {
+  text-align: center;
+  color: #8a6d63;
+  font-size: 13px;
+}
+
+.table-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 4px;
+  background: #f0a59a;
+  color: #fff;
+}
+
+.table-btn:hover {
+  filter: brightness(0.94);
+}
+
+/* ========= Subtab ========= */
+
+.subtabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.subtab-button {
+  flex: 1;
+  border-radius: 999px;
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.6);
+  color: #4a3a36;
+  font-weight: 500;
+}
+
+.subtab-button.active {
+  background: #f5c3bf;
+}
+
+.subtab-panel {
+  margin-top: 0;
+}
+
+.align-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ========= 月曆 ========= */
+
+.calendar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+#calendarMonthLabel {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  font-size: 12px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-weight: 600;
+  color: #6a5650;
+}
+
+.calendar-cell {
+  min-height: 70px;
+  background: #fff9f6;
+  border-radius: 10px;
+  padding: 4px 6px;
+  border: 1px solid #f2d3c9;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-cell.outside {
+  opacity: 0.4;
+}
+
+.calendar-cell-date {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.calendar-cell-body {
+  font-size: 11px;
+  line-height: 1.3;
+  color: #6a5650;
+}
+
+/* ========= Modal ========= */
+
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+}
+
+.modal-dialog {
+  position: relative;
+  background: #fff9f6;
+  max-width: 540px;
+  width: 90%;
+  border-radius: 18px;
+  padding: 20px 22px 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-dialog h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.modal-actions {
+  justify-content: flex-end;
+}
+
+/* ========= RWD ========= */
+
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .sidebar-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+}
+
+/* 雲端資料夾容器 */
+
+.drive-container {
+  width: 100%;
+  min-height: 700px;
+  border-radius: 12px;
+  background: #fafafa;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: hidden;
+}
+
+.drive-container iframe {
+  width: 100%;
+  height: 700px;
+  border: none;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.placeholder-text {
+  color: #999;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* 右上角歡迎與導航欄 */
+
+.top-nav-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(179, 137, 120, 0.1);
+  margin-bottom: 12px;
+}
+
+.top-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #4a3a36;
+}
+
+.top-nav-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #f5c3bf;
+  color: #4a3a36;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.top-nav-btn:hover {
+  background: #edb2a8;
+  transform: translateY(-1px);
+}
+
+.top-nav-btn.logout-style {
+  background: #d8c5c2;
+}
+
+.top-nav-btn.logout-style:hover {
+  background: #cbb5b2;
+}
+
+/* Google Drive 連結按鈕 */
+
+.drive-link-btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: #f5c3bf;
+  color: #4a3a36;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+  margin-top: 10px;
+}
+
+.drive-link-btn:hover {
+  background: #edb2a8;
+}
+
+/* Google Drive 資料夾存取盒 */
+
+.drive-access-box {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(245,195,191,0.1), rgba(230,215,163,0.1));
+  border-radius: 12px;
+  border: 2px dashed rgba(179,137,120,0.2);
+}
+
+.drive-access-box h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 18px;
+  color: #4a3a36;
+}
+
+.drive-access-box p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: #6a5650;
+}
+
+.drive-access-link {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #f5c3bf;
+  color: #4a3a36;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(179,137,120,0.15);
+}
+
+.drive-access-link:hover {
+  background: #edb2a8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(179,137,120,0.25);
+}

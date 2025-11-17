@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <title>情支資源中心</title>
+    <link rel="stylesheet" href="myweb.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <div class="site-layout">
+      <!-- 左側欄 -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h1>情支資源中心</h1>
+          <p class="sidebar-subtitle">
+           情緒行為問題學生支持資源中心
+          </p>
+        </div>
+
+        <nav class="sidebar-menu">
+          <button class="menu-item active" data-page="newsSection">最新消息</button>
+          <button class="menu-item" data-page="teamSection">團隊介紹</button>
+          <button class="menu-item" data-page="plansSection">計畫與表件</button>
+          <button class="menu-item" data-page="servicesSection">情支服務</button>
+          <button class="menu-item" data-page="resourcesSection">其他資源</button>
+        </nav>
+
+        <button
+          id="teacherLoginBtn"
+          class="login-btn"
+          type="button"
+        >
+          團隊教師登入（內部）
+        </button>
+      </aside>
+
+      <!-- 右側內容 -->
+      <main class="main-content">
+        <!-- 右上角歡迎與導航欄 -->
+        <div class="top-nav-bar">
+          <!-- 未登入狀態 -->
+          <div id="topNavNotLoggedIn" class="top-nav-item">
+            歡迎您
+            <button id="topNavLoginBtn" class="top-nav-btn">登入/註冊</button>
+          </div>
+          <!-- 登入狀態 -->
+          <div id="topNavLoggedIn" class="top-nav-item" style="display: none;">
+            歡迎：<span id="topNavUserName"></span> 老師
+            <button id="topNavBackToDashboardBtn" class="top-nav-btn">回到後台</button>
+            <button id="topNavLogoutBtn" class="top-nav-btn logout-style">登出</button>
+          </div>
+        </div>
+
+        <!-- 最新消息 -->
+        <section id="newsSection" class="page-section">
+          <header class="section-header">
+            <h2>最新消息</h2>
+            <p id="newsIntro" class="section-intro"></p>
+          </header>
+
+          <section class="card">
+            <h3 class="card-title">資訊公告</h3>
+            <table class="info-table">
+              <thead>
+                <tr>
+                  <th>上傳日期</th>
+                  <th>公告內容</th>
+                  <th>檔案名稱</th>
+                  <th>備註</th>
+                  <th>下載 / 查看</th>
+                </tr>
+              </thead>
+              <tbody id="newsTableBody">
+                <tr>
+                  <td colspan="5" class="empty-text">
+                    目前尚無最新消息。
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+
+        <!-- 團隊介紹 -->
+        <section
+          id="teamSection"
+          class="page-section"
+          style="display: none"
+        >
+          <header class="section-header">
+            <h2>團隊介紹</h2>
+            <p id="teamIntro" class="section-intro"></p>
+          </header>
+
+          <!-- 團隊合照與文字 -->
+          <section class="card team-top-card">
+            <div class="team-top-layout">
+              <div class="team-photo-placeholder">
+                <span>（可放團隊合照）</span>
+              </div>
+              <div class="team-description">
+                <p>
+                  本中心整合學校、家庭與專業資源，提供情緒行為障礙與情緒行為問題學生之評估、
+                  轉介與支持服務，陪伴學校一同面對孩子的需求。
+                </p>
+                <p>
+                  下方為本中心的團隊編制與成員介紹，包含召集人、專業督導、副召集人、專業教師與執行秘書等。
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- 團隊成員卡片 -->
+          <section class="card">
+            <h3 class="card-title">團隊編制</h3>
+            <div id="teamCardsContainer"></div>
+          </section>
+        </section>
+
+        <!-- 計畫與表件 -->
+        <section
+          id="plansSection"
+          class="page-section"
+          style="display: none"
+        >
+          <header class="section-header">
+            <h2>計畫與表件</h2>
+            <p id="plansIntro" class="section-intro"></p>
+          </header>
+
+          <section class="card">
+            <h3 class="card-title">資訊公告</h3>
+            <table class="info-table">
+              <thead>
+                <tr>
+                  <th>上傳日期</th>
+                  <th>公告內容</th>
+                  <th>檔案名稱</th>
+                  <th>備註</th>
+                  <th>下載 / 查看</th>
+                </tr>
+              </thead>
+              <tbody id="plansTableBody">
+                <tr>
+                  <td colspan="5" class="empty-text">
+                    目前尚無相關計畫或表件。
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+
+        <!-- 情支服務 -->
+        <section
+          id="servicesSection"
+          class="page-section"
+          style="display: none"
+        >
+          <header class="section-header">
+            <h2>情支服務</h2>
+            <p id="servicesIntro" class="section-intro"></p>
+          </header>
+
+          <!-- 預防層級 Tab -->
+          <section class="card subtabs">
+            <button
+              class="subtab-button active"
+              data-service-tab="primaryPanel"
+            >
+              初級預防
+            </button>
+            <button
+              class="subtab-button"
+              data-service-tab="secondaryPanel"
+            >
+              次級預防
+            </button>
+            <button
+              class="subtab-button"
+              data-service-tab="tertiaryPanel"
+            >
+              三級預防
+            </button>
+          </section>
+
+          <!-- 各層級內容 -->
+          <section
+            id="primaryPanel"
+            class="card service-panel"
+          >
+            <h3 class="card-title">初級預防</h3>
+            <p class="service-note">
+              以宣導與普及性方案為主，協助全校師生提升對情緒行為議題的敏感度與理解。
+            </p>
+
+            <div class="service-block">
+              <h4>研習活動推廣</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_primary_研習活動">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>增能學習資料</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_primary_增能學習資料">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>個案服務</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_primary_個案服務">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section
+            id="secondaryPanel"
+            class="card service-panel"
+            style="display: none"
+          >
+            <h3 class="card-title">次級預防</h3>
+            <p class="service-note">
+              針對有明顯適應困難或情緒行為風險的學生，提供小團體或班級化的支持。
+            </p>
+
+            <div class="service-block">
+              <h4>研習活動推廣</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_secondary_研習活動">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>增能學習資料</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_secondary_增能學習資料">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>個案服務</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_secondary_個案服務">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section
+            id="tertiaryPanel"
+            class="card service-panel"
+            style="display: none"
+          >
+            <h3 class="card-title">三級預防</h3>
+            <p class="service-note">
+              針對高風險個案，提供跨專業合作與密集支持，協助學校穩定學生學習與生活。
+            </p>
+
+            <div class="service-block">
+              <h4>研習活動推廣</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_tertiary_研習活動">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>增能學習資料</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_tertiary_增能學習資料">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="service-block">
+              <h4>個案服務</h4>
+              <table class="info-table">
+                <thead>
+                  <tr>
+                    <th>上傳日期</th>
+                    <th>公告內容</th>
+                    <th>檔案名稱</th>
+                    <th>備註</th>
+                    <th>下載 / 查看</th>
+                  </tr>
+                </thead>
+                <tbody id="serviceTable_tertiary_個案服務">
+                  <tr>
+                    <td colspan="5" class="empty-text">
+                      目前尚無資料。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- 其他資源 -->
+        <section
+          id="resourcesSection"
+          class="page-section"
+          style="display: none"
+        >
+          <header class="section-header">
+            <h2>其他資源</h2>
+            <p id="resourcesIntro" class="section-intro"></p>
+          </header>
+
+          <section class="card">
+            <h3 class="card-title">資訊公告</h3>
+            <table class="info-table">
+              <thead>
+                <tr>
+                  <th>上傳日期</th>
+                  <th>公告內容</th>
+                  <th>檔案名稱</th>
+                  <th>備註</th>
+                  <th>下載 / 查看</th>
+                </tr>
+              </thead>
+              <tbody id="resourcesTableBody">
+                <tr>
+                  <td colspan="5" class="empty-text">
+                    目前尚無其他資源。
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="myweb.js"></script>
+  </body>
+</html>
