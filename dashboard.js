@@ -848,6 +848,39 @@ if (teamEditForm) {
 // ========== 4. 教師請假系統 ==========
 
 const leaveCol = collection(db, "leaveRequests");
+const compRestCol = collection(db, "compRests");
+
+// ===== 補休相關函數 =====
+
+// 檢查是否符合補休資格
+// 條件：星期六、星期日，或是週一到週五的上午1~7時、下午5~11時
+function isEligibleForCompRest(dateStr, startHour, endHour) {
+  const date = new Date(dateStr);
+  const dayOfWeek = date.getDay(); // 0 = 週日, 1 = 週一, ..., 6 = 週六
+  
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+  
+  // 檢查是否是非上班時間
+  // 上午1~7時、下午5~11時
+  // 上午1~7時 = 1-7點, 下午5~11時 = 17-23點
+  const isOutsideBusinessHours = (startHour <= 7 && endHour <= 7) || (startHour >= 17 && endHour >= 17);
+  
+  return isWeekend || isOutsideBusinessHours;
+}
+
+// 取得補休 Modal 相關元素
+const compRestConfirmModal = document.getElementById("compRestConfirmModal");
+const compRestConfirmTitle = document.getElementById("compRestConfirmTitle");
+const compRestConfirmMessage = document.getElementById("compRestConfirmMessage");
+const compRestConfirmYesBtn = document.getElementById("compRestConfirmYesBtn");
+const compRestConfirmNoBtn = document.getElementById("compRestConfirmNoBtn");
+
+const overtimeInvalidModal = document.getElementById("overtimeInvalidModal");
+const overtimeInvalidCloseBtn = document.getElementById("overtimeInvalidCloseBtn");
+
+// 全域變數用於儲存待決的請假資料
+let pendingLeaveData = null;
+let shouldSaveAsCompRest = false;
 
 // Subtab 切換
 const subtabButtons = document.querySelectorAll(".subtab-button");
@@ -936,12 +969,14 @@ if (leaveForm) {
   leaveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const startHour = document.getElementById("leaveStartHour").value;
-    const startMinute = document.getElementById("leaveStartMinute").value;
+    const startHour = parseInt(document.getElementById("leaveStartHour").value);
+    const startMinute = parseInt(document.getElementById("leaveStartMinute").value);
     const startPeriod = document.getElementById("leaveStartPeriod").value;
-    const endHour = document.getElementById("leaveEndHour").value;
-    const endMinute = document.getElementById("leaveEndMinute").value;
+    const endHour = parseInt(document.getElementById("leaveEndHour").value);
+    const endMinute = parseInt(document.getElementById("leaveEndMinute").value);
     const endPeriod = document.getElementById("leaveEndPeriod").value;
+    const leaveType = document.getElementById("leaveType").value;
+    const leaveDate = document.getElementById("leaveDate").value;
 
     if (!startHour || !startMinute || !startPeriod || !endHour || !endMinute || !endPeriod) {
       alert("請填寫完整的時間範圍。");
@@ -951,10 +986,14 @@ if (leaveForm) {
     // 組合時間範圍字符串
     const timeRange = `${startPeriod === "AM" ? "上午" : "下午"} ${startHour}:${startMinute} ~ ${endPeriod === "AM" ? "上午" : "下午"} ${endHour}:${endMinute}`;
 
+    // 轉換為24小時制
+    const start24Hour = startPeriod === "AM" ? startHour : (startHour === 12 ? 12 : startHour + 12);
+    const end24Hour = endPeriod === "AM" ? endHour : (endHour === 12 ? 12 : endHour + 12);
+
     const data = {
       teacher: document.getElementById("leaveTeacherName").value,
-      type: document.getElementById("leaveType").value,
-      startDate: document.getElementById("leaveDate").value,
+      type: leaveType,
+      startDate: leaveDate,
       timeRange: timeRange,
       hours: parseInt(document.getElementById("leaveHours").value),
       agent: document.getElementById("leaveAgent").value,
@@ -968,6 +1007,31 @@ if (leaveForm) {
       return;
     }
 
+    // 檢查是否需要補休審核
+    const isPublicHoliday = leaveType === "公假";
+    const isOvertime = leaveType === "加班";
+    
+    if (isPublicHoliday || isOvertime) {
+      const isEligible = isEligibleForCompRest(leaveDate, start24Hour, end24Hour);
+      
+      if (isOvertime && !isEligible) {
+        // 加班時間不符合資格，顯示錯誤提示
+        overtimeInvalidModal.classList.remove("hidden");
+        return;
+      }
+      
+      if (isEligible) {
+        // 符合補休資格，顯示確認視窗
+        pendingLeaveData = data;
+        const typeLabel = isPublicHoliday ? "公假" : "加班";
+        compRestConfirmTitle.textContent = `${typeLabel}補休資格確認`;
+        compRestConfirmMessage.textContent = `您的${typeLabel}登記可能符合補休資格，是否要登記補休時數？`;
+        compRestConfirmModal.classList.remove("hidden");
+        return;
+      }
+    }
+
+    // 正常的請假記錄（不需要補休審核）
     try {
       await addDoc(leaveCol, data);
       alert("請假紀錄已新增。");
@@ -979,6 +1043,67 @@ if (leaveForm) {
       console.error("新增請假紀錄錯誤：", e);
       alert("儲存時發生錯誤，請稍後再試。");
     }
+  });
+}
+
+// 補休確認按鈕事件
+if (compRestConfirmYesBtn) {
+  compRestConfirmYesBtn.addEventListener("click", async () => {
+    compRestConfirmModal.classList.add("hidden");
+    
+    if (!pendingLeaveData) return;
+    
+    try {
+      // 同時存儲到 leaveRequests 和 compRests
+      const leaveDocRef = await addDoc(leaveCol, pendingLeaveData);
+      
+      // 建立補休記錄
+      const compRestData = {
+        ...pendingLeaveData,
+        type: pendingLeaveData.type === "公假" ? "公假補休" : "加班補休",
+        originalLeaveId: leaveDocRef.id,
+      };
+      await addDoc(compRestCol, compRestData);
+      
+      alert("請假紀錄已新增，並認列為補休時數。");
+      leaveForm.reset();
+      leaveHoursInput.value = "";
+      pendingLeaveData = null;
+      loadRecentLeaveRecords();
+      loadLeaveStatistics();
+    } catch (e) {
+      console.error("儲存請假/補休紀錄錯誤：", e);
+      alert("儲存時發生錯誤，請稍後再試。");
+    }
+  });
+}
+
+if (compRestConfirmNoBtn) {
+  compRestConfirmNoBtn.addEventListener("click", async () => {
+    compRestConfirmModal.classList.add("hidden");
+    
+    if (!pendingLeaveData) return;
+    
+    try {
+      // 只存儲請假記錄，不認列補休
+      await addDoc(leaveCol, pendingLeaveData);
+      alert("請假紀錄已新增。");
+      leaveForm.reset();
+      leaveHoursInput.value = "";
+      pendingLeaveData = null;
+      loadRecentLeaveRecords();
+      loadLeaveStatistics();
+    } catch (e) {
+      console.error("儲存請假紀錄錯誤：", e);
+      alert("儲存時發生錯誤，請稍後再試。");
+    }
+  });
+}
+
+// 加班時間不合法 Modal 關閉按鈕
+if (overtimeInvalidCloseBtn) {
+  overtimeInvalidCloseBtn.addEventListener("click", () => {
+    overtimeInvalidModal.classList.add("hidden");
   });
 }
 

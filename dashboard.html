@@ -422,6 +422,12 @@
             </button>
             <button
               class="subtab-button"
+              data-subtab="compRestStatsPanel"
+            >
+              補休時數統計
+            </button>
+            <button
+              class="subtab-button"
               data-subtab="leaveSummaryReportPanel"
             >
               請假資訊統整表
@@ -576,6 +582,7 @@
                     <option value="家庭照顧假">家庭照顧假</option>
                     <option value="歲時祭儀假">歲時祭儀假</option>
                     <option value="心理調適假">心理調適假</option>
+                    <option value="加班">加班</option>
                   </select>
                 </div>
               </div>
@@ -719,6 +726,116 @@
                 </tr>
               </tbody>
             </table>
+          </section>
+
+          <!-- 補休時數統計 -->
+          <section
+            id="compRestStatsPanel"
+            class="card subtab-panel"
+            style="display: none"
+          >
+            <h3 class="card-title">查詢條件</h3>
+
+            <form id="compRestStatsForm">
+              <div class="form-row">
+                <div class="form-col">
+                  <label for="compRestTeacherNameSelect"
+                    >教師姓名（選填）</label
+                  >
+                  <select id="compRestTeacherNameSelect">
+                    <option value="">全部教師</option>
+                  </select>
+                </div>
+
+                <div class="form-col">
+                  <label for="compRestStartDate">開始日期</label>
+                  <input type="date" id="compRestStartDate" />
+                </div>
+
+                <div class="form-col">
+                  <label for="compRestEndDate">結束日期</label>
+                  <input type="date" id="compRestEndDate" />
+                </div>
+
+                <div class="form-col">
+                  <label for="compRestViewMode">檢視模式</label>
+                  <select id="compRestViewMode">
+                    <option value="list">清單檢視</option>
+                    <option value="calendar">月曆檢視</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col-half align-right">
+                  <div class="form-actions right-actions">
+                    <button type="submit" id="compRestSearchBtn">
+                      查詢
+                    </button>
+                    <button
+                      type="button"
+                      id="compRestResetBtn"
+                      class="btn-tertiary"
+                    >
+                      清除搜尋條件
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <!-- 清單檢視 -->
+            <div id="compRestListView">
+              <h3 class="card-title">補休清單檢視</h3>
+              <table class="info-table" id="compRestStatsTable">
+                <thead>
+                  <tr>
+                    <th>登記日期</th>
+                    <th>教師</th>
+                    <th>類型</th>
+                    <th>時間範圍</th>
+                    <th>補休時數</th>
+                    <th>職務代理人</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="7" class="empty-text">
+                      目前查詢條件下沒有補休紀錄。
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 月曆檢視 -->
+            <div
+              id="compRestCalendarView"
+              style="display: none"
+            >
+              <div class="calendar-header">
+                <button
+                  type="button"
+                  id="compRestPrevMonthBtn"
+                  class="btn-tertiary"
+                >
+                  ◀ 上一個月
+                </button>
+                <span id="compRestCalendarMonthLabel"></span>
+                <button
+                  type="button"
+                  id="compRestNextMonthBtn"
+                  class="btn-tertiary"
+                >
+                  下一個月 ▶
+                </button>
+              </div>
+              <div
+                id="compRestCalendarContainer"
+                class="calendar-grid"
+              ></div>
+            </div>
           </section>
 
           <!-- 請假資訊統整表 -->
@@ -909,6 +1026,31 @@
           </section>
         </section>
       </main>
+    </div>
+
+    <!-- 補休確認 Modal -->
+    <div id="compRestConfirmModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <h3 id="compRestConfirmTitle">補休資格確認</h3>
+        <p id="compRestConfirmMessage" style="margin: 20px 0; font-size: 14px;"></p>
+        <div class="form-actions modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" id="compRestConfirmYesBtn" class="btn-primary">是</button>
+          <button type="button" id="compRestConfirmNoBtn" class="btn-tertiary">否</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加班時間不合法 Modal -->
+    <div id="overtimeInvalidModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <h3 style="color: #d9534f;">加班時間不符合資格</h3>
+        <p style="margin: 20px 0; font-size: 14px;">您的請假登記時間不符合加班資格。加班時間只能是星期六、星期日，或是週一到週五的上午1~7時、下午5~11時。</p>
+        <div class="form-actions modal-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" id="overtimeInvalidCloseBtn" class="btn-tertiary">返回</button>
+        </div>
+      </div>
     </div>
 
     <!-- 檔案 / 公告 編輯 Modal -->
