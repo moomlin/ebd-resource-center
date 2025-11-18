@@ -181,6 +181,7 @@ const fileServiceGroupDiv = document.getElementById("fileServiceGroup");
 const fileServiceLevel = document.getElementById("fileServiceLevel");
 const fileServiceType = document.getElementById("fileServiceType");
 const fileInfoTitle = document.getElementById("fileInfoTitle");
+const fileInfoContent = document.getElementById("fileInfoContent");
 const fileNameInput = document.getElementById("fileName");
 const fileTypeInput = document.getElementById("fileType");
 const fileUrlInput = document.getElementById("fileUrl");
@@ -325,6 +326,7 @@ if (fileForm) {
       serviceLevel: fileServiceLevel ? fileServiceLevel.value || null : null,
       serviceType: fileServiceType ? fileServiceType.value || null : null,
       infoTitle: fileInfoTitle.value,
+      infoContent: fileInfoContent.value || "",
       fileName: fileNameInput.value,
       fileType: fileTypeInput.value || "",
       url: fileUrlInput.value,
@@ -333,7 +335,7 @@ if (fileForm) {
     };
 
     if (!data.category || !data.infoTitle || !data.fileName || !data.url) {
-      alert("請至少填寫主分類、公告內容、檔案名稱與檔案連結。");
+      alert("請至少填寫主分類、資訊標題、檔案名稱與檔案連結。");
       return;
     }
 
@@ -341,11 +343,24 @@ if (fileForm) {
 
     try {
       if (docId) {
+        // 更新現有資料
         const ref = doc(db, "files", docId);
         await updateDoc(ref, data);
         alert("檔案資訊已更新。");
       } else {
+        // 新增資料到所選分類
         await addDoc(filesCol, data);
+        
+        // 同時新增一份到「最新消息」（如果不是最新消息本身）
+        if (fileCategory.value !== "最新消息") {
+          const latestNewsData = {
+            ...data,
+            category: "最新消息",
+            originalCategory: fileCategory.value,
+          };
+          await addDoc(filesCol, latestNewsData);
+        }
+        
         alert("已新增一筆檔案資訊。");
       }
       resetFileForm();
@@ -427,6 +442,7 @@ async function editFile(id) {
       if (fileServiceLevel) fileServiceLevel.value = d.serviceLevel || "";
       if (fileServiceType) fileServiceType.value = d.serviceType || "";
       fileInfoTitle.value = d.infoTitle || "";
+      fileInfoContent.value = d.infoContent || "";
       fileNameInput.value = d.fileName || "";
       fileTypeInput.value = d.fileType || "";
       fileUrlInput.value = d.url || "";

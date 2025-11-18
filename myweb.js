@@ -181,12 +181,153 @@ const serviceLevelMap = {
 };
 const serviceTypes = ["研習活動", "增能學習資料", "個案服務"];
 
+// 打開檔案詳細資訊 Modal
+function openFileDetailModal(data) {
+  const modal = document.getElementById("fileDetailModal");
+  const titleEl = document.getElementById("fileDetailTitle");
+  const contentEl = document.getElementById("fileDetailContent");
+  const metaEl = document.getElementById("fileDetailMeta");
+  const actionsEl = document.getElementById("fileDetailActions");
+
+  titleEl.textContent = data.infoTitle || "檔案資訊";
+  contentEl.innerHTML = data.infoContent ? `<p>${data.infoContent}</p>` : "<p>無詳細說明</p>";
+  
+  const fileLabel = data.fileType
+    ? `${data.fileName || ""}（${data.fileType}）`
+    : data.fileName || "";
+  
+  metaEl.innerHTML = `
+    <p><strong>檔案名稱：</strong> ${fileLabel}</p>
+    ${data.note ? `<p><strong>備註：</strong> ${data.note}</p>` : ""}
+  `;
+
+  actionsEl.innerHTML = data.url
+    ? `<a href="${data.url}" target="_blank" rel="noopener" class="link-btn" style="padding: 8px 16px; display: inline-block;">下載 / 查看</a>`
+    : "檔案連結不可用";
+
+  modal.classList.remove("hidden");
+}
+
+function closeFileDetailModal() {
+  const modal = document.getElementById("fileDetailModal");
+  modal.classList.add("hidden");
+}
+
+// 關閉 Modal 的事件監聽
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("fileDetailCloseBtn");
+  const modal = document.getElementById("fileDetailModal");
+  const backdrop = document.querySelector(".modal-backdrop");
+  
+  if (closeBtn) closeBtn.addEventListener("click", closeFileDetailModal);
+  if (backdrop) backdrop.addEventListener("click", closeFileDetailModal);
+});
+
+// 分類標籤的點擊事件 - 根據分類跳轉到對應的頁面
+function getCategoryTagHref(category) {
+  const categoryMap = {
+    "計畫與表件": "#plansSection",
+    "情支服務": "#servicesSection",
+    "其他資源": "#resourcesSection",
+    "最新消息": "#newsSection",
+  };
+  return categoryMap[category] || "#";
+}
+
+function getCategoryTagClass(category) {
+  const classMap = {
+    "計畫與表件": "plans",
+    "情支服務": "services",
+    "其他資源": "resources",
+    "最新消息": "news",
+  };
+  return classMap[category] || "";
+}
+
+// 為「最新消息」渲染表格（包含分類標籤）
+function renderNewsTableWithCategoryTags(allFiles) {
+  const tbody = document.getElementById("newsTableBody");
+  if (!tbody) return;
+
+  tbody.innerHTML =
+    "<tr><td colspan='5' class='empty-text'>載入中⋯</td></tr>";
+
+  const list = allFiles.filter(
+    (d) => getMainCategory(d) === "最新消息"
+  );
+
+  tbody.innerHTML = "";
+
+  if (list.length === 0) {
+    tbody.innerHTML =
+      "<tr><td colspan='5' class='empty-text'>目前尚無最新消息。</td></tr>";
+    return;
+  }
+
+  // 依 createdAt 由新到舊
+  list.sort((a, b) => {
+    const at = a.createdAt?.toDate
+      ? a.createdAt.toDate().getTime()
+      : 0;
+    const bt = b.createdAt?.toDate
+      ? b.createdAt.toDate().getTime()
+      : 0;
+    return bt - at;
+  });
+
+  list.forEach((d) => {
+    const tr = document.createElement("tr");
+    const dateStr = formatDateFromTimestamp(d.createdAt);
+    const fileLabel = d.fileType
+      ? `${d.fileName || ""}（${d.fileType}）`
+      : d.fileName || "";
+    
+    const originalCategory = d.originalCategory || "最新消息";
+    const tagClass = getCategoryTagClass(originalCategory);
+    const tagHref = getCategoryTagHref(originalCategory);
+
+    tr.innerHTML = `
+      <td>${dateStr}</td>
+      <td>
+        <a class="clickable-title" style="cursor: pointer;">
+          ${d.infoTitle || ""}
+        </a>
+      </td>
+      <td>${fileLabel}</td>
+      <td>
+        <a href="${tagHref}" class="category-tag ${tagClass}">
+          ${originalCategory}
+        </a>
+      </td>
+      <td>
+        ${
+          d.url
+            ? `<a href="${d.url}" target="_blank" rel="noopener" class="link-btn">開啟</a>`
+            : ""
+        }
+      </td>
+    `;
+    
+    // 標題的點擊事件
+    const titleLink = tr.querySelector(".clickable-title");
+    if (titleLink) {
+      titleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        openFileDetailModal(d);
+      });
+    }
+    
+    tbody.appendChild(tr);
+  });
+}
+
+// 為其他類別渲染表格（不含分類標籤）
 function renderSimpleCategoryTable(allFiles, mainCategory, tbodyId) {
   const tbody = document.getElementById(tbodyId);
   if (!tbody) return;
 
   tbody.innerHTML =
-    "<tr><td colspan='5' class='empty-text'>載入中⋯</td></tr>";
+    "<tr><td colspan='4' class='empty-text'>載入中⋯</td></tr>";
 
   const list = allFiles.filter(
     (d) => getMainCategory(d) === mainCategory
@@ -196,7 +337,7 @@ function renderSimpleCategoryTable(allFiles, mainCategory, tbodyId) {
 
   if (list.length === 0) {
     tbody.innerHTML =
-      "<tr><td colspan='5' class='empty-text'>目前尚無相關資料。</td></tr>";
+      "<tr><td colspan='4' class='empty-text'>目前尚無相關資料。</td></tr>";
     return;
   }
 
@@ -220,9 +361,12 @@ function renderSimpleCategoryTable(allFiles, mainCategory, tbodyId) {
 
     tr.innerHTML = `
       <td>${dateStr}</td>
-      <td>${d.infoTitle || ""}</td>
+      <td>
+        <a class="clickable-title" style="cursor: pointer;">
+          ${d.infoTitle || ""}
+        </a>
+      </td>
       <td>${fileLabel}</td>
-      <td>${d.note || ""}</td>
       <td>
         ${
           d.url
@@ -231,6 +375,16 @@ function renderSimpleCategoryTable(allFiles, mainCategory, tbodyId) {
         }
       </td>
     `;
+    
+    // 標題的點擊事件
+    const titleLink = tr.querySelector(".clickable-title");
+    if (titleLink) {
+      titleLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        openFileDetailModal(d);
+      });
+    }
+    
     tbody.appendChild(tr);
   });
 }
@@ -325,8 +479,10 @@ async function loadAllFilesAndRender() {
       ...s.data(),
     }));
 
-    // 一般主分類
-    renderSimpleCategoryTable(allFiles, "最新消息", "newsTableBody");
+    // 「最新消息」使用特殊渲染（包含分類標籤）
+    renderNewsTableWithCategoryTags(allFiles);
+    
+    // 其他主分類使用簡單渲染
     renderSimpleCategoryTable(
       allFiles,
       "計畫與表件",

@@ -64,9 +64,9 @@
               <thead>
                 <tr>
                   <th>上傳日期</th>
-                  <th>公告內容</th>
+                  <th>標題</th>
                   <th>檔案名稱</th>
-                  <th>備註</th>
+                  <th>分類</th>
                   <th>下載 / 查看</th>
                 </tr>
               </thead>
@@ -134,15 +134,14 @@
               <thead>
                 <tr>
                   <th>上傳日期</th>
-                  <th>公告內容</th>
+                  <th>標題</th>
                   <th>檔案名稱</th>
-                  <th>備註</th>
                   <th>下載 / 查看</th>
                 </tr>
               </thead>
               <tbody id="plansTableBody">
                 <tr>
-                  <td colspan="5" class="empty-text">
+                  <td colspan="4" class="empty-text">
                     目前尚無相關計畫或表件。
                   </td>
                 </tr>
@@ -433,15 +432,14 @@
               <thead>
                 <tr>
                   <th>上傳日期</th>
-                  <th>公告內容</th>
+                  <th>標題</th>
                   <th>檔案名稱</th>
-                  <th>備註</th>
                   <th>下載 / 查看</th>
                 </tr>
               </thead>
               <tbody id="resourcesTableBody">
                 <tr>
-                  <td colspan="5" class="empty-text">
+                  <td colspan="4" class="empty-text">
                     目前尚無其他資源。
                   </td>
                 </tr>
@@ -450,6 +448,27 @@
           </section>
         </section>
       </main>
+    </div>
+
+    <!-- 檔案詳細資訊 Modal -->
+    <div id="fileDetailModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-dialog">
+        <button class="modal-close-btn" id="fileDetailCloseBtn">✕</button>
+        <h3 id="fileDetailTitle" style="margin-top: 0;"></h3>
+        
+        <div id="fileDetailContent" style="margin: 20px 0; padding: 15px; background-color: #f9f9f9; border-radius: 4px; border-left: 4px solid #0066cc;">
+          <!-- 公告內容會在這裡顯示 -->
+        </div>
+
+        <div id="fileDetailMeta" style="margin: 15px 0; font-size: 14px; color: #666;">
+          <!-- 其他資訊會在這裡顯示 -->
+        </div>
+
+        <div id="fileDetailActions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e0e0;">
+          <!-- 下載按鈕會在這裡顯示 -->
+        </div>
+      </div>
     </div>
 
     <script type="module" src="myweb.js"></script>
