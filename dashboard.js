@@ -861,9 +861,11 @@ function isEligibleForCompRest(dateStr, startHour, endHour) {
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
   
   // 檢查是否是非上班時間
-  // 上午1~7時、下午5~11時
   // 上午1~7時 = 1-7點, 下午5~11時 = 17-23點
-  const isOutsideBusinessHours = (startHour <= 7 && endHour <= 7) || (startHour >= 17 && endHour >= 17);
+  // 條件: 開始時間和結束時間都在非上班時間內
+  const isBeforeBusinessHours = startHour >= 1 && endHour <= 7;
+  const isAfterBusinessHours = startHour >= 17 && endHour <= 23;
+  const isOutsideBusinessHours = isBeforeBusinessHours || isAfterBusinessHours;
   
   return isWeekend || isOutsideBusinessHours;
 }
@@ -873,6 +875,11 @@ const compRestConfirmModal = document.getElementById("compRestConfirmModal");
 const compRestConfirmTitle = document.getElementById("compRestConfirmTitle");
 const compRestConfirmMessage = document.getElementById("compRestConfirmMessage");
 const compRestConfirmYesBtn = document.getElementById("compRestConfirmYesBtn");
+
+// 取得時間驗證錯誤 Modal
+const timeValidationErrorModal = document.getElementById("timeValidationErrorModal");
+const timeValidationErrorMessage = document.getElementById("timeValidationErrorMessage");
+const timeValidationErrorCloseBtn = document.getElementById("timeValidationErrorCloseBtn");
 const compRestConfirmNoBtn = document.getElementById("compRestConfirmNoBtn");
 
 const overtimeInvalidModal = document.getElementById("overtimeInvalidModal");
@@ -983,12 +990,22 @@ if (leaveForm) {
       return;
     }
 
-    // 組合時間範圍字符串
-    const timeRange = `${startPeriod === "AM" ? "上午" : "下午"} ${startHour}:${startMinute} ~ ${endPeriod === "AM" ? "上午" : "下午"} ${endHour}:${endMinute}`;
-
-    // 轉換為24小時制
+    // 轉換為24小時制進行比較
     const start24Hour = startPeriod === "AM" ? startHour : (startHour === 12 ? 12 : startHour + 12);
     const end24Hour = endPeriod === "AM" ? endHour : (endHour === 12 ? 12 : endHour + 12);
+
+    // 檢查結束時間是否晚於開始時間
+    const startTotalMinutes = start24Hour * 60 + startMinute;
+    const endTotalMinutes = end24Hour * 60 + endMinute;
+
+    if (endTotalMinutes <= startTotalMinutes) {
+      timeValidationErrorMessage.textContent = "結束時間必須晚於開始時間，請重新填寫。";
+      timeValidationErrorModal.classList.remove("hidden");
+      return;
+    }
+
+    // 組合時間範圍字符串
+    const timeRange = `${startPeriod === "AM" ? "上午" : "下午"} ${startHour}:${startMinute} ~ ${endPeriod === "AM" ? "上午" : "下午"} ${endHour}:${endMinute}`;
 
     const data = {
       teacher: document.getElementById("leaveTeacherName").value,
@@ -1104,6 +1121,13 @@ if (compRestConfirmNoBtn) {
 if (overtimeInvalidCloseBtn) {
   overtimeInvalidCloseBtn.addEventListener("click", () => {
     overtimeInvalidModal.classList.add("hidden");
+  });
+}
+
+// 時間驗證錯誤 Modal 關閉按鈕
+if (timeValidationErrorCloseBtn) {
+  timeValidationErrorCloseBtn.addEventListener("click", () => {
+    timeValidationErrorModal.classList.add("hidden");
   });
 }
 
