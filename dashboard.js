@@ -240,7 +240,11 @@ async function loadFiles(filter) {
 
     let rows = [];
     snap.forEach((docSnap) => {
-      rows.push({ id: docSnap.id, data: docSnap.data() });
+      const d = docSnap.data();
+      // 只顯示非複製品的資料（即不是複製到「最新消息」的資料）
+      if (d.category !== "最新消息" || !d.originalCategory) {
+        rows.push({ id: docSnap.id, data: d });
+      }
     });
 
     if (filter) {
