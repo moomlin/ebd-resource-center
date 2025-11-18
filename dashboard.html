@@ -579,13 +579,13 @@
               </div>
 
               <div class="form-row">
-                <div class="form-col">
+                <div class="form-col-half">
                   <label>時間範圍 <span style="color: red;">*</span></label>
-                  <div style="display: flex; gap: 20px; align-items: center;">
-                    <div style="flex: 1;">
-                      <label style="font-size: 12px; color: #666;">開始時間</label>
-                      <div style="display: flex; gap: 10px;">
-                        <select id="leaveStartHour" style="flex: 1;" required>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <div style="flex: 0 1 45%;">
+                      <label style="font-size: 11px; color: #666;">開始</label>
+                      <div style="display: flex; gap: 4px;">
+                        <select id="leaveStartHour" style="flex: 1; font-size: 12px;" required>
                           <option value="">時</option>
                           <option value="01">01</option>
                           <option value="02">02</option>
@@ -600,26 +600,25 @@
                           <option value="11">11</option>
                           <option value="12">12</option>
                         </select>
-                        <span style="align-self: flex-end; padding-bottom: 8px;">:</span>
-                        <select id="leaveStartMinute" style="flex: 1;" required>
+                        <select id="leaveStartMinute" style="flex: 1; font-size: 12px;" required>
                           <option value="">分</option>
                           <option value="00">00</option>
                           <option value="15">15</option>
                           <option value="30">30</option>
                           <option value="45">45</option>
                         </select>
-                        <select id="leaveStartPeriod" style="flex: 1;" required>
+                        <select id="leaveStartPeriod" style="flex: 0.8; font-size: 12px;" required>
                           <option value="">上/下</option>
-                          <option value="AM">上午</option>
-                          <option value="PM">下午</option>
+                          <option value="AM">上</option>
+                          <option value="PM">下</option>
                         </select>
                       </div>
                     </div>
 
-                    <div style="flex: 1;">
-                      <label style="font-size: 12px; color: #666;">結束時間</label>
-                      <div style="display: flex; gap: 10px;">
-                        <select id="leaveEndHour" style="flex: 1;" required>
+                    <div style="flex: 0 1 45%;">
+                      <label style="font-size: 11px; color: #666;">結束</label>
+                      <div style="display: flex; gap: 4px;">
+                        <select id="leaveEndHour" style="flex: 1; font-size: 12px;" required>
                           <option value="">時</option>
                           <option value="01">01</option>
                           <option value="02">02</option>
@@ -634,18 +633,17 @@
                           <option value="11">11</option>
                           <option value="12">12</option>
                         </select>
-                        <span style="align-self: flex-end; padding-bottom: 8px;">:</span>
-                        <select id="leaveEndMinute" style="flex: 1;" required>
+                        <select id="leaveEndMinute" style="flex: 1; font-size: 12px;" required>
                           <option value="">分</option>
                           <option value="00">00</option>
                           <option value="15">15</option>
                           <option value="30">30</option>
                           <option value="45">45</option>
                         </select>
-                        <select id="leaveEndPeriod" style="flex: 1;" required>
+                        <select id="leaveEndPeriod" style="flex: 0.8; font-size: 12px;" required>
                           <option value="">上/下</option>
-                          <option value="AM">上午</option>
-                          <option value="PM">下午</option>
+                          <option value="AM">上</option>
+                          <option value="PM">下</option>
                         </select>
                       </div>
                     </div>
