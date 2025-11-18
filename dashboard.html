@@ -579,24 +579,79 @@
               </div>
 
               <div class="form-row">
-                <div class="form-col-half">
-                  <label for="leavePeriod">時間範圍 <span style="color: red;">*</span></label>
-                  <select id="leavePeriod" required>
-                    <option value="">請選擇時間範圍</option>
-                    <option value="">--- 上午 ---</option>
-                    <option value="08:00~09:00">上午 08:00～09:00</option>
-                    <option value="09:00~10:00">上午 09:00～10:00</option>
-                    <option value="10:00~11:00">上午 10:00～11:00</option>
-                    <option value="11:00~12:00">上午 11:00～12:00</option>
-                    <option value="">--- 下午 ---</option>
-                    <option value="13:00~14:00">下午 13:00～14:00</option>
-                    <option value="14:00~15:00">下午 14:00～15:00</option>
-                    <option value="15:00~16:00">下午 15:00～16:00</option>
-                    <option value="16:00~17:00">下午 16:00～17:00</option>
-                    <option value="">--- 全天 ---</option>
-                    <option value="08:00~17:00">全天 08:00～17:00</option>
-                  </select>
+                <div class="form-col">
+                  <label>時間範圍 <span style="color: red;">*</span></label>
+                  <div style="display: flex; gap: 20px; align-items: center;">
+                    <div style="flex: 1;">
+                      <label style="font-size: 12px; color: #666;">開始時間</label>
+                      <div style="display: flex; gap: 10px;">
+                        <select id="leaveStartHour" style="flex: 1;" required>
+                          <option value="">時</option>
+                          <option value="01">01</option>
+                          <option value="02">02</option>
+                          <option value="03">03</option>
+                          <option value="04">04</option>
+                          <option value="05">05</option>
+                          <option value="06">06</option>
+                          <option value="07">07</option>
+                          <option value="08">08</option>
+                          <option value="09">09</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                        </select>
+                        <span style="align-self: flex-end; padding-bottom: 8px;">:</span>
+                        <select id="leaveStartMinute" style="flex: 1;" required>
+                          <option value="">分</option>
+                          <option value="00">00</option>
+                          <option value="15">15</option>
+                          <option value="30">30</option>
+                          <option value="45">45</option>
+                        </select>
+                        <select id="leaveStartPeriod" style="flex: 1;" required>
+                          <option value="">上/下</option>
+                          <option value="AM">上午</option>
+                          <option value="PM">下午</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div style="flex: 1;">
+                      <label style="font-size: 12px; color: #666;">結束時間</label>
+                      <div style="display: flex; gap: 10px;">
+                        <select id="leaveEndHour" style="flex: 1;" required>
+                          <option value="">時</option>
+                          <option value="01">01</option>
+                          <option value="02">02</option>
+                          <option value="03">03</option>
+                          <option value="04">04</option>
+                          <option value="05">05</option>
+                          <option value="06">06</option>
+                          <option value="07">07</option>
+                          <option value="08">08</option>
+                          <option value="09">09</option>
+                          <option value="10">10</option>
+                          <option value="11">11</option>
+                          <option value="12">12</option>
+                        </select>
+                        <span style="align-self: flex-end; padding-bottom: 8px;">:</span>
+                        <select id="leaveEndMinute" style="flex: 1;" required>
+                          <option value="">分</option>
+                          <option value="00">00</option>
+                          <option value="15">15</option>
+                          <option value="30">30</option>
+                          <option value="45">45</option>
+                        </select>
+                        <select id="leaveEndPeriod" style="flex: 1;" required>
+                          <option value="">上/下</option>
+                          <option value="AM">上午</option>
+                          <option value="PM">下午</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
                 <div class="form-col-half">
                   <label for="leaveHours">請假時數（最小單位為一小時） <span style="color: red;">*</span></label>
                   <input 

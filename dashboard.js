@@ -865,47 +865,77 @@ const recentLeaveTableBody = document.querySelector(
   "#recentLeaveTable tbody"
 );
 
-// 時間範圍選擇時自動計算請假時數
-const leavePeriodSelect = document.getElementById("leavePeriod");
+// 時間選擇時自動計算請假時數
+const timeInputs = [
+  "leaveStartHour", "leaveStartMinute", "leaveStartPeriod",
+  "leaveEndHour", "leaveEndMinute", "leaveEndPeriod"
+];
 const leaveHoursInput = document.getElementById("leaveHours");
 
-if (leavePeriodSelect && leaveHoursInput) {
-  leavePeriodSelect.addEventListener("change", (e) => {
-    const period = e.target.value;
-    if (!period || period.includes("---")) {
-      leaveHoursInput.value = "";
-      return;
-    }
+function calculateLeaveHours() {
+  const startHour = parseInt(document.getElementById("leaveStartHour").value) || 0;
+  const startMinute = parseInt(document.getElementById("leaveStartMinute").value) || 0;
+  const startPeriod = document.getElementById("leaveStartPeriod").value;
+  
+  const endHour = parseInt(document.getElementById("leaveEndHour").value) || 0;
+  const endMinute = parseInt(document.getElementById("leaveEndMinute").value) || 0;
+  const endPeriod = document.getElementById("leaveEndPeriod").value;
 
-    // 解析時間範圍 HH:MM~HH:MM
-    const [startTime, endTime] = period.split("~");
-    const start = new Date(`2024-01-01 ${startTime}`);
-    const end = new Date(`2024-01-01 ${endTime}`);
-    
-    // 計算分鐘差
-    const diffMinutes = (end - start) / (1000 * 60);
-    // 轉換為小時，未滿1小時進位
-    const hours = Math.ceil(diffMinutes / 60);
-    
-    leaveHoursInput.value = `${hours}小時`;
-  });
+  if (!startHour || !startPeriod || !endHour || !endPeriod) {
+    leaveHoursInput.value = "";
+    return;
+  }
+
+  // 轉換為24小時制的分鐘
+  const start24Hour = startPeriod === "AM" ? startHour : (startHour === 12 ? 12 : startHour + 12);
+  const end24Hour = endPeriod === "AM" ? endHour : (endHour === 12 ? 12 : endHour + 12);
+
+  const startTotalMinutes = start24Hour * 60 + startMinute;
+  const endTotalMinutes = end24Hour * 60 + endMinute;
+
+  let diffMinutes = endTotalMinutes - startTotalMinutes;
+  
+  // 如果結束時間早於開始時間，視為隔日
+  if (diffMinutes < 0) {
+    diffMinutes += 24 * 60;
+  }
+
+  // 未滿一小時進位
+  const hours = Math.ceil(diffMinutes / 60);
+  leaveHoursInput.value = hours > 0 ? `${hours}小時` : "";
 }
+
+timeInputs.forEach((inputId) => {
+  const element = document.getElementById(inputId);
+  if (element) {
+    element.addEventListener("change", calculateLeaveHours);
+  }
+});
 
 if (leaveForm) {
   leaveForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const period = document.getElementById("leavePeriod").value;
-    if (!period || period.includes("---")) {
-      alert("請選擇時間範圍。");
+    const startHour = document.getElementById("leaveStartHour").value;
+    const startMinute = document.getElementById("leaveStartMinute").value;
+    const startPeriod = document.getElementById("leaveStartPeriod").value;
+    const endHour = document.getElementById("leaveEndHour").value;
+    const endMinute = document.getElementById("leaveEndMinute").value;
+    const endPeriod = document.getElementById("leaveEndPeriod").value;
+
+    if (!startHour || !startMinute || !startPeriod || !endHour || !endMinute || !endPeriod) {
+      alert("請填寫完整的時間範圍。");
       return;
     }
+
+    // 組合時間範圍字符串
+    const timeRange = `${startPeriod === "AM" ? "上午" : "下午"} ${startHour}:${startMinute} ~ ${endPeriod === "AM" ? "上午" : "下午"} ${endHour}:${endMinute}`;
 
     const data = {
       teacher: document.getElementById("leaveTeacherName").value,
       type: document.getElementById("leaveType").value,
       startDate: document.getElementById("leaveDate").value,
-      timeRange: period,
+      timeRange: timeRange,
       hours: parseInt(document.getElementById("leaveHours").value),
       agent: document.getElementById("leaveAgent").value,
       reason: document.getElementById("leaveReason").value || "",
@@ -1760,7 +1790,7 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
 
     // 從 teamMembers 獲取教師的學校資訊
     let teacherSchool = "特殊教育中心";
-    const teamMembersSnap = await getDocs(teamMembersCol);
+    const teamMembersSnap = await getDocs(teamCol);
     teamMembersSnap.forEach((docSnap) => {
       const member = docSnap.data();
       if (member.name === teacherName && member.school) {
