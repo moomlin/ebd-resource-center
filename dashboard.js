@@ -2138,9 +2138,128 @@ async function deleteCompRestRecord(id) {
   }
 }
 
+// 補休月曆檢視相關
+let currentCalendarMonth = new Date();
+let allCompRestData = [];
+
+// 獲取所有補休資料用於月曆顯示
+async function fetchAllCompRestData(filter = null) {
+  try {
+    const snap = await getDocs(compRestCol);
+    allCompRestData = snap.docs.map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+    }));
+
+    if (filter) {
+      if (filter.teacher) {
+        allCompRestData = allCompRestData.filter((d) => d.teacher === filter.teacher);
+      }
+    }
+
+    return allCompRestData;
+  } catch (e) {
+    console.error("獲取補休資料錯誤：", e);
+    return [];
+  }
+}
+
+// 生成月曆
+function renderCompRestCalendar() {
+  const year = currentCalendarMonth.getFullYear();
+  const month = currentCalendarMonth.getMonth();
+  
+  // 更新月份標籤
+  const monthLabel = new Intl.DateTimeFormat("zh-TW", {
+    year: "numeric",
+    month: "long",
+  }).format(currentCalendarMonth);
+  compRestCalendarMonthLabel.textContent = monthLabel;
+
+  // 清空容器
+  compRestCalendarContainer.innerHTML = "";
+
+  // 創建星期頭
+  const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+  const headerDiv = document.createElement("div");
+  headerDiv.style.cssText = "display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; margin-bottom: 10px;";
+  
+  weekDays.forEach((day) => {
+    const dayHeader = document.createElement("div");
+    dayHeader.textContent = day;
+    dayHeader.style.cssText = "text-align: center; font-weight: bold; padding: 10px; background: #f0f0f0; border-radius: 4px;";
+    headerDiv.appendChild(dayHeader);
+  });
+  compRestCalendarContainer.appendChild(headerDiv);
+
+  // 創建日期網格
+  const calendarGrid = document.createElement("div");
+  calendarGrid.style.cssText = "display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #e0e0e0; padding: 1px;";
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  // 填充前一個月的日期
+  for (let i = 0; i < firstDay; i++) {
+    const emptyCell = document.createElement("div");
+    emptyCell.style.cssText = "background: #f9f9f9; min-height: 80px; padding: 5px;";
+    calendarGrid.appendChild(emptyCell);
+  }
+
+  // 填充當月日期
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateCell = document.createElement("div");
+    dateCell.style.cssText = "background: white; min-height: 80px; padding: 5px; overflow-y: auto; border: 1px solid #e0e0e0;";
+
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    
+    // 查找該日期的補休記錄
+    const dayRecords = allCompRestData.filter((d) => d.startDate === dateStr);
+
+    if (dayRecords.length > 0) {
+      // 添加日期標題
+      const dayLabel = document.createElement("div");
+      dayLabel.style.cssText = "font-weight: bold; color: #0066cc; margin-bottom: 5px; font-size: 12px;";
+      dayLabel.textContent = `${day}日`;
+      dateCell.appendChild(dayLabel);
+
+      // 添加補休記錄
+      dayRecords.forEach((record) => {
+        const recordDiv = document.createElement("div");
+        recordDiv.style.cssText = "background: #e3f2fd; border-left: 3px solid #0066cc; padding: 4px; margin-bottom: 3px; font-size: 11px; border-radius: 2px;";
+        recordDiv.innerHTML = `
+          <div style="font-weight: 500; color: #0066cc;">${record.teacher}</div>
+          <div style="color: #666; margin-top: 2px;">${record.type}</div>
+          <div style="color: #999; margin-top: 2px;">${record.hours}小時</div>
+        `;
+        dateCell.appendChild(recordDiv);
+      });
+    } else {
+      // 添加日期標題（無記錄）
+      const dayLabel = document.createElement("div");
+      dayLabel.style.cssText = "font-weight: bold; color: #999; margin-bottom: 5px; font-size: 12px;";
+      dayLabel.textContent = `${day}日`;
+      dateCell.appendChild(dayLabel);
+    }
+
+    calendarGrid.appendChild(dateCell);
+  }
+
+  // 填充下一個月的日期
+  const lastDay = new Date(year, month + 1, 0).getDay();
+  const remainingCells = 6 - lastDay;
+  for (let i = 0; i < remainingCells; i++) {
+    const emptyCell = document.createElement("div");
+    emptyCell.style.cssText = "background: #f9f9f9; min-height: 80px; padding: 5px;";
+    calendarGrid.appendChild(emptyCell);
+  }
+
+  compRestCalendarContainer.appendChild(calendarGrid);
+}
+
 // 補休統計查詢表單
 if (compRestStatsForm) {
-  compRestStatsForm.addEventListener("submit", (e) => {
+  compRestStatsForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
     const filter = {
@@ -2157,8 +2276,26 @@ if (compRestStatsForm) {
     } else {
       compRestListView.style.display = "none";
       compRestCalendarView.style.display = "block";
-      // 月曆檢視邏輯
+      // 重置為當月
+      currentCalendarMonth = new Date();
+      await fetchAllCompRestData(filter);
+      renderCompRestCalendar();
     }
+  });
+}
+
+// 月曆前後月份按鈕
+if (compRestPrevMonthBtn) {
+  compRestPrevMonthBtn.addEventListener("click", () => {
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+    renderCompRestCalendar();
+  });
+}
+
+if (compRestNextMonthBtn) {
+  compRestNextMonthBtn.addEventListener("click", () => {
+    currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+    renderCompRestCalendar();
   });
 }
 
@@ -2170,6 +2307,7 @@ if (compRestResetBtn) {
     compRestViewMode.value = "list";
     compRestListView.style.display = "block";
     compRestCalendarView.style.display = "none";
+    currentCalendarMonth = new Date();
     loadCompRestStatistics();
   });
 }
