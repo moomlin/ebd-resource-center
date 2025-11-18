@@ -1824,7 +1824,7 @@ async function generateTeacherLeaveSummaryReport(teacherName) {
     });
 
     // 填入統計表
-    const summaryTableBody = document.querySelector("#leaveSummaryTable tbody");
+    const summaryTableBody = document.querySelector("#leaveReportSummaryTable tbody");
     summaryTableBody.innerHTML = "";
 
     let totalHours = 0;
