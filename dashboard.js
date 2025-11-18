@@ -2015,4 +2015,165 @@ loadApprovedTeachers();
 loadTeamMembers();
 loadRecentLeaveRecords();
 loadLeaveStatistics();
+
+// ===== 補休統計面板初始化 =====
+
+const compRestStatsForm = document.getElementById("compRestStatsForm");
+const compRestTeacherNameSelect = document.getElementById("compRestTeacherNameSelect");
+const compRestStartDate = document.getElementById("compRestStartDate");
+const compRestEndDate = document.getElementById("compRestEndDate");
+const compRestViewMode = document.getElementById("compRestViewMode");
+const compRestSearchBtn = document.getElementById("compRestSearchBtn");
+const compRestResetBtn = document.getElementById("compRestResetBtn");
+const compRestListView = document.getElementById("compRestListView");
+const compRestCalendarView = document.getElementById("compRestCalendarView");
+const compRestStatsTableBody = document.querySelector("#compRestStatsTable tbody");
+const compRestCalendarContainer = document.getElementById("compRestCalendarContainer");
+const compRestCalendarMonthLabel = document.getElementById("compRestCalendarMonthLabel");
+const compRestPrevMonthBtn = document.getElementById("compRestPrevMonthBtn");
+const compRestNextMonthBtn = document.getElementById("compRestNextMonthBtn");
+
+// 當教師名單載入時，更新補休查詢下拉選單
+function updateCompRestTeacherSelect() {
+  const teachers = new Set();
+  document.querySelectorAll("#leaveStatsTable tbody tr").forEach((tr) => {
+    const teacherCell = tr.querySelector("td:nth-child(2)");
+    if (teacherCell) {
+      teachers.add(teacherCell.textContent);
+    }
+  });
+  
+  compRestTeacherNameSelect.innerHTML = '<option value="">全部教師</option>';
+  Array.from(teachers)
+    .sort()
+    .forEach((teacher) => {
+      if (teacher && teacher !== "教師") {
+        const option = document.createElement("option");
+        option.value = teacher;
+        option.textContent = teacher;
+        compRestTeacherNameSelect.appendChild(option);
+      }
+    });
+}
+
+// 載入補休統計資料
+async function loadCompRestStatistics(filter = null) {
+  if (!compRestStatsTableBody) return;
+
+  compRestStatsTableBody.innerHTML =
+    "<tr><td colspan='7' class='loading-text'>載入中⋯</td></tr>";
+
+  try {
+    const qRef = query(compRestCol, orderBy("createdAt", "desc"));
+    const snap = await getDocs(qRef);
+
+    let rows = [];
+    snap.forEach((docSnap) => {
+      rows.push({ id: docSnap.id, data: docSnap.data() });
+    });
+
+    if (filter) {
+      rows = rows.filter(({ data: d }) => {
+        if (filter.teacher && d.teacher !== filter.teacher) return false;
+        if (filter.startDate && filter.endDate) {
+          const recordDate = new Date(d.startDate);
+          const start = new Date(filter.startDate);
+          const end = new Date(filter.endDate);
+          if (recordDate < start || recordDate > end) return false;
+        }
+        return true;
+      });
+    }
+
+    compRestStatsTableBody.innerHTML = "";
+
+    if (rows.length === 0) {
+      compRestStatsTableBody.innerHTML =
+        "<tr><td colspan='7' class='empty-text'>目前查詢條件下沒有補休紀錄。</td></tr>";
+      return;
+    }
+
+    rows.forEach(({ id, data: d }) => {
+      const createdAt = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+      const dateStr = createdAt
+        ? `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, "0")}-${String(createdAt.getDate()).padStart(2, "0")}`
+        : "";
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${dateStr}</td>
+        <td>${d.teacher || ""}</td>
+        <td>${d.type || ""}</td>
+        <td>${d.timeRange || ""}</td>
+        <td>${d.hours || 0}</td>
+        <td>${d.agent || ""}</td>
+        <td>
+          <button type="button" class="table-btn delete-comprest" data-id="${id}">刪除</button>
+        </td>
+      `;
+      compRestStatsTableBody.appendChild(tr);
+    });
+
+    compRestStatsTableBody
+      .querySelectorAll(".delete-comprest")
+      .forEach((btn) =>
+        btn.addEventListener("click", () => deleteCompRestRecord(btn.dataset.id))
+      );
+  } catch (e) {
+    console.error("載入補休統計錯誤：", e);
+    compRestStatsTableBody.innerHTML =
+      "<tr><td colspan='7' class='error-text'>載入資料時發生錯誤。</td></tr>";
+  }
+}
+
+// 刪除補休紀錄
+async function deleteCompRestRecord(id) {
+  if (!confirm("確定要刪除此筆補休紀錄嗎？")) return;
+  try {
+    await deleteDoc(doc(db, "compRests", id));
+    loadCompRestStatistics();
+  } catch (e) {
+    console.error("刪除補休紀錄錯誤：", e);
+    alert("刪除時發生錯誤，請稍後再試。");
+  }
+}
+
+// 補休統計查詢表單
+if (compRestStatsForm) {
+  compRestStatsForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    
+    const filter = {
+      teacher: compRestTeacherNameSelect.value,
+      startDate: compRestStartDate.value,
+      endDate: compRestEndDate.value,
+    };
+
+    const viewMode = compRestViewMode.value;
+    if (viewMode === "list") {
+      compRestListView.style.display = "block";
+      compRestCalendarView.style.display = "none";
+      loadCompRestStatistics(filter);
+    } else {
+      compRestListView.style.display = "none";
+      compRestCalendarView.style.display = "block";
+      // 月曆檢視邏輯
+    }
+  });
+}
+
+if (compRestResetBtn) {
+  compRestResetBtn.addEventListener("click", () => {
+    compRestTeacherNameSelect.value = "";
+    compRestStartDate.value = "";
+    compRestEndDate.value = "";
+    compRestViewMode.value = "list";
+    compRestListView.style.display = "block";
+    compRestCalendarView.style.display = "none";
+    loadCompRestStatistics();
+  });
+}
+
+// 初始載入補休統計
+loadCompRestStatistics();
 loadUserApprovals();
